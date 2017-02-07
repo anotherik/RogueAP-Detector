@@ -4,7 +4,8 @@
 # version: 0.1
 # author: anotherik (Ricardo Gonçalves)
 
-import os, string
+import os, string, threading, sys, time
+import modules.iwlist_network_monitor as iwlist_monitor
 
 class colors:
         HEADER = '\033[95m'
@@ -18,7 +19,7 @@ class colors:
         GRAY = '\033[90m'
         UNDERLINE = '\033[4m'
 
-class thread(threading, Thread):
+class thread(threading.Thread):
 	def __init__(self, function):
 		threading.Thread.__init__(self)
 		self.function=function
@@ -78,7 +79,7 @@ def parse_args():
 		#change_mac(interface)
 		intro()
 		enable_monitor(interface)
-		scan_thread = thread(lambda: iwlist.scan(interface))
+		scan_thread = thread(lambda: iwlist_monitor.scan(interface))
 		scan_thread.start()
 		time.sleep(2)
 	else:
