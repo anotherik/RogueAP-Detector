@@ -4,8 +4,9 @@
 # version: 0.1
 # author: anotherik (Ricardo Gonçalves)
 
-import os, string, threading, sys, time
-import modules.iwlist_network_monitor as iwlist_monitor
+import os, string, threading, sys, signal, time, Queue
+import modules.scanners.iwlist_network_monitor as iwlist_monitor
+import modules.scanners.scapy_network_monitor as scapy_monitor
 
 class colors:
         HEADER = '\033[95m'
@@ -19,14 +20,12 @@ class colors:
         GRAY = '\033[90m'
         UNDERLINE = '\033[4m'
 
-class thread(threading.Thread):
+class my_thread(threading.Thread):
 	def __init__(self, function):
 		threading.Thread.__init__(self)
 		self.function=function
 	def run(self):
-		print("Thread stared")
 		self.function()
-		print("Thread ended")
 
 def print_info(info, type=0):
         if (type == 0):
@@ -58,15 +57,22 @@ def change_mac(iface):
 
 # enable monitor mode to the given interface
 def enable_monitor(iface):
+	print("Changing "+str(iface)+" to monitor mode.")
 	os.system("ifconfig %s down" % iface)
 	os.system("iwconfig %s mode monitor" % iface)
 	os.system("ifconfig %s up" % iface)
 
 # disable monitor mode to the given interface
-def enable_monitor(iface):
+def disable_monitor(iface):
+	print("Changing "+str(iface)+" to managed mode.")
 	os.system("ifconfig %s down" % iface)
 	os.system("iwconfig %s mode managed" % iface)
 	os.system("ifconfig %s up" % iface)
+
+def signal_handler(signal, frame):
+	disable_monitor(interface)
+	print colors.GRAY + "\nYou pressed Ctrl+C!\nGoodbye!" + colors.ENDC
+	sys.exit(0)
 
 # parse the input arguments
 def parse_args():
@@ -76,12 +82,29 @@ def parse_args():
 	if (sys.argv[1] == "-i"):
 		global interface
 		interface = sys.argv[2]
+		file = "temporary_scan.txt"
 		#change_mac(interface)
 		intro()
-		enable_monitor(interface)
-		scan_thread = thread(lambda: iwlist_monitor.scan(interface))
+		#mode = "scapy_scan"
+		mode = "iwlist_scan"
+		scan_queue = Queue.Queue()
+		if mode == "scapy_scan":
+			enable_monitor(interface)
+			scan_thread = my_thread(lambda: scapy_monitor.scapy_scan(interface))
+		if mode == "iwlist_scan":
+			scan_thread = my_thread(lambda: iwlist_monitor.scan(interface, file, scan_queue))
+		
+		scan_thread.daemon = True
 		scan_thread.start()
+
 		time.sleep(2)
+
+		while True:
+			signal.signal(signal.SIGINT, signal_handler)
+			if scan_queue.empty() == False:
+				ap_info = scan_queue.get()
+			time.sleep(0.3)
+
 	else:
 		usage()
 
