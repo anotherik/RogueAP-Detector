@@ -30,7 +30,6 @@ def scan(interface, output, queue):
 	print colors.WARNING + '{:^22s}|{:^19s}|{:^9s}|{:^24s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9]) + colors.ENDC
 	while True:
 		ap_list = get_results(interface)
-		print get_results(interface)
 		try:
 			with open(output,'a') as output_file:
 				for line in ap_list:

@@ -71,7 +71,6 @@ def disable_monitor(iface):
 	os.system("ifconfig %s up" % iface)
 
 def signal_handler(signal, frame):
-	disable_monitor(interface)
 	print colors.GRAY + "\nYou pressed Ctrl+C!\nGoodbye!" + colors.ENDC
 	sys.exit(0)
 

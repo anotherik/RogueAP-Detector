@@ -34,8 +34,7 @@ class colors:
 	UNDERLINE = '\033[4m'
 
 def aps_lookup(pkt):
-	global channel
-	os.system("iwconfig %s channel %s" % (interface,channel) )
+
 	global table_of_manufacturers
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
 
@@ -63,14 +62,26 @@ def aps_lookup(pkt):
 		spaces2 = 26 - len(vendor)
 		spaces2 = ' '*spaces2
 		if encryption=="0":
-			print colors.OKGREEN+"%2d  %s%s%s  %s%s%s" % (int(channel), ssid, spaces, bssid, vendor, spaces2, encryption) +colors.ENDC
+			print colors.OKGREEN+"%s%s%s  %2d  %s%s%s" % (ssid, spaces, bssid, int(channel), vendor, spaces2, encryption) +colors.ENDC
 		else:	
-			print "%2d  %s%s%s  %s%s%s" % (int(channel), ssid, spaces, bssid, vendor, spaces2, encryption)
+			print "%s%s%s  %2d  %s%s%s" % (ssid, spaces, bssid, int(channel), vendor, spaces2, encryption)
 
-	channel = random.randrange(1,12)
+	signal.signal(signal.SIGINT, signal_handler)
+
+# disable monitor mode to the given interface
+def disable_monitor():
+	print("\nChanging "+str(interface)+" to managed mode.")
+	os.system("ifconfig %s down" % interface)
+	os.system("iwconfig %s mode managed" % interface)
+	os.system("ifconfig %s up" % interface)
+
+def signal_handler(signal, frame):
+	disable_monitor()
+	print("Goodbye! ")
+	sys.exit(0)
 
 def printHeader():
-	print colors.BOLD + "CH  SSID                   BSSID              BRAND                     ENCRYPTION" + colors.ENDC
+	print colors.WARNING + "SSID                   BSSID              CH  BRAND                     ENCRYPTION" + colors.ENDC
 
 def scapy_scan(i):
 	global interface
