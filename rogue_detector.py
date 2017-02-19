@@ -38,11 +38,12 @@ def print_info(info, type=0):
         print(m)
 
 def intro():
-	print(colors.BOLD + "Rogue Access Point Detector" + colors.ENDC)
+	print(colors.BOLD + "\n\t==== Rogue Access Point Detector ====\n" + colors.ENDC)
 
 def usage():
 	print_info("Usage: python rogue-detector.py [option]")
-	print("\nOptions:  -i interface    -> the interface to monitor the network")
+	print("\nOptions:  -i interface\t  -> the interface to monitor the network")
+	print("\t  -m mode\t  -> scanning mode (iwlist or scapy)")
 
 # optional: change the mac address of the interface performing the scan 
 def change_mac(iface):
@@ -76,37 +77,48 @@ def signal_handler(signal, frame):
 
 # parse the input arguments
 def parse_args():
-	if (len(sys.argv) < 2):
+	intro()
+	if (len(sys.argv) < 5):
 		usage()
 		return
-	if (sys.argv[1] == "-i"):
+	cmd = sys.argv[1]
+	if (cmd == "-i"):
 		global interface
 		interface = sys.argv[2]
 		file = "temporary_scan.txt"
 		#change_mac(interface)
-		intro()
-		#mode = "scapy_scan"
-		mode = "iwlist_scan"
-		scan_queue = Queue.Queue()
-		if mode == "scapy_scan":
+
+	cmd = sys.argv[3]
+	if (cmd == "-m"):
+		mode = sys.argv[4]
+		scan_queue = ""
+		modes = ["scapy", "iwlist"]
+		if (mode == "scapy"):
 			enable_monitor(interface)
-			scan_thread = my_thread(lambda: scapy_monitor.scapy_scan(interface))
-		if mode == "iwlist_scan":
+			scapy_monitor.scapy_scan(interface)
+			#scan_thread = my_thread(lambda: scapy_monitor.scapy_scan(interface))
+		if (mode == "iwlist"):
+			scan_queue = Queue.Queue()
 			scan_thread = my_thread(lambda: iwlist_monitor.scan(interface, file, scan_queue))
+			scan_thread.daemon = True
+			scan_thread.start()	
+		if (mode not in modes):
+			print ("Wrong module selected!\n")
+			usage()
+			return
 		
-		scan_thread.daemon = True
-		scan_thread.start()
-
 		time.sleep(2)
-
 		while True:
 			signal.signal(signal.SIGINT, signal_handler)
-			if scan_queue.empty() == False:
+			if(scan_queue == ""):
+				continue
+			if(scan_queue.empty() == False):
 				ap_info = scan_queue.get()
-			time.sleep(0.3)
+			time.sleep(0.3)			
 
 	else:
 		usage()
+		return
 
 def main():
 	parse_args()
