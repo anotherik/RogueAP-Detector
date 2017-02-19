@@ -4,6 +4,7 @@ manufacturer/__init__.pyc
 manufacturer/parse_manufacturer.pyc
 modules/__init__.pyc
 modules/detectors/__init__.pyc
+modules/detectors/evil_twin_detector.pyc
 modules/scanners/__init__.pyc
 modules/scanners/iwlist_network_monitor.pyc
 modules/scanners/scapy_network_monitor.pyc
