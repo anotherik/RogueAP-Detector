@@ -10,6 +10,7 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
 import os, signal, sys, string
 import manufacturer.parse_manufacturer as manufacturer
+import modules.detectors.evil_twin_detector as detector1
 
 manufacturer_table = "manufacturer/manufacturer_table.txt"
 table_of_manufacturers = {}
@@ -49,7 +50,10 @@ def aps_lookup(pkt):
 		        {Dot11ProbeResp:%Dot11ProbeResp.cap%}")
 
 		manufacturer_data = manufacturer.search(table_of_manufacturers,str(pkt.addr2))
-		vendor = manufacturer_data[0].comment
+		if(manufacturer_data == []):
+			vendor = "Not Found"
+		else:
+			vendor = manufacturer_data[0].comment
 
 		if re.search("privacy", capability): encryption = "1"
 		else: encryption = "0"

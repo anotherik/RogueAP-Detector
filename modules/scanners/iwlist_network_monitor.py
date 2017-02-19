@@ -2,6 +2,7 @@
 # Network monitor using iwlist
 import subprocess, sys, time, re, json, os, Queue
 import manufacturer.parse_manufacturer as manufacturer
+import modules.detectors.evil_twin_detector as detector1
 
 captured_aps = []
 manufacturer_table = "manufacturer/manufacturer_table.txt"
@@ -14,6 +15,7 @@ class colors:
         WHITE = '\033[37m'
         WARNING = '\033[93m'
         FAIL = '\033[91m'
+        FAIL2 = '\033[41m'
         ENDC = '\033[0m'
         BOLD = '\033[1m'
         GRAY = '\033[90m'
@@ -28,6 +30,7 @@ def scan(interface, output, queue):
 	print colors.WARNING + '{:^22s}|{:^19s}|{:^9s}|{:^24s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9]) + colors.ENDC
 	while True:
 		ap_list = get_results(interface)
+		print get_results(interface)
 		try:
 			with open(output,'a') as output_file:
 				for line in ap_list:
@@ -38,13 +41,13 @@ def scan(interface, output, queue):
 							limited = True
 						
 						if limited:
-							if rogueAP_detector(line):
-								print colors.FAIL + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+							if detector1.rogueAP_detector(line,captured_aps):
+								print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
 							else:
 								print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 						else:
-							if rogueAP_detector(line):	
-								print colors.FAIL + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+							if detector1.rogueAP_detector(line,captured_aps):	
+								print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
 							else:
 								print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 
@@ -77,23 +80,6 @@ def filter_aps(access_point):
 			print "Exception found: \n"+e
 			pass		
     return True
-
-def rogueAP_detector(access_point):
-	rogue = False
-	for ap in captured_aps:
-		try:
-			if ap['essid'] == access_point['essid'] and ap['mac'] != access_point['mac']: # type of rap (same ssid and dif bssid)
-				rogue = True
-			if ap['mac'] == access_point['mac'] and ap['essid'] != access_point['essid']: # type of rap (same bssid and dif ssid)
-				rogue = True
-			if ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] != access_point['channel']: # type of rap (same ssid, same bssid and dif channel)
-				rogue = True
-			else:
-				rogue = False
-		except Exception as e:
-			print e
-			pass
-	return rogue
 
 def parse(list):
     parsed_list = []
