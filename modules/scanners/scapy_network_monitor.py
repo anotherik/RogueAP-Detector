@@ -11,6 +11,7 @@ from scapy.all import *
 import os, signal, sys, string
 import manufacturer.parse_manufacturer as manufacturer
 import modules.detectors.evil_twin_detector as detector1
+import data.manipulate_db as db_api
 
 manufacturer_table = "manufacturer/manufacturer_table.txt"
 table_of_manufacturers = {}
@@ -18,8 +19,10 @@ table_of_manufacturers = {}
 access_points = set()
 encryption = "0"
 vendor = ""
-channel = 1
 spaces = 0
+
+global current_ch
+current_ch = 1
 
 class colors:
 	HEADER = '\033[95m'
@@ -34,14 +37,19 @@ class colors:
 	UNDERLINE = '\033[4m'
 
 def aps_lookup(pkt):
-
-	global table_of_manufacturers
+	global table_of_manufacturers, current_ch
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
 
-	# we are checking if ssid is already in the access_points list (and we also want same ssid with different bssid)
-	if ( (pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp)) and (pkt[Dot11].info not in access_points) ):
+	if(current_ch >= 13):
+		current_ch = 1
+	os.system("iw dev %s set channel %d" % (interface, current_ch) )
+	#os.system("iwconfig %s channel %s" % (interface, current_ch) )
+	time.sleep(0.1)
 
-		access_points.add(pkt[Dot11].info)
+	# we are checking if ssid is already in the access_points list (and we also want same ssid with different bssid)
+	if ( (pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp)) and (pkt[Dot11].addr3 not in access_points) ):
+
+		access_points.add(pkt[Dot11].addr3)
 		ssid = pkt[Dot11].info
 		bssid = pkt[Dot11].addr3
 		channel = int(ord(pkt[Dot11Elt:3].info))
@@ -65,7 +73,9 @@ def aps_lookup(pkt):
 			print colors.OKGREEN+"%s%s%s  %2d  %s%s%s" % (ssid, spaces, bssid, int(channel), vendor, spaces2, encryption) +colors.ENDC
 		else:	
 			print "%s%s%s  %2d  %s%s%s" % (ssid, spaces, bssid, int(channel), vendor, spaces2, encryption)
+		db_api.insert_in_db_scapy(conn, ssid, bssid, int(channel), vendor, encryption)
 
+	current_ch+=1
 	signal.signal(signal.SIGINT, signal_handler)
 
 # disable monitor mode to the given interface
@@ -76,9 +86,11 @@ def disable_monitor():
 	os.system("ifconfig %s up" % interface)
 
 def signal_handler(signal, frame):
+	db_api.select_from_db(conn)
 	disable_monitor()
 	print("Goodbye! ")
 	sys.exit(0)
+
 
 def printHeader():
 	print colors.WARNING + "SSID                   BSSID              CH  BRAND                     ENCRYPTION" + colors.ENDC
@@ -87,4 +99,8 @@ def scapy_scan(i):
 	global interface
 	interface = i
 	printHeader()
+	global conn
+	conn = db_api.open_db()
+	conn.text_factory = str
+	db_api.create_table_scapy(conn)
 	sniff(iface=interface, prn=aps_lookup)	
