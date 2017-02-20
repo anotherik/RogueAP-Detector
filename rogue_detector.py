@@ -98,7 +98,7 @@ def parse_args():
 			#scan_thread = my_thread(lambda: scapy_monitor.scapy_scan(interface))
 		if (mode == "iwlist"):
 			scan_queue = Queue.Queue()
-			scan_thread = my_thread(lambda: iwlist_monitor.scan(interface, file, scan_queue))
+			scan_thread = my_thread(lambda: iwlist_monitor.scan(interface, scan_queue))
 			scan_thread.daemon = True
 			scan_thread.start()	
 		if (mode not in modes):
