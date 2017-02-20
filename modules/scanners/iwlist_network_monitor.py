@@ -42,9 +42,9 @@ def scan(interface, queue):
 					
 					if limited:
 						if detector1.rogueAP_detector(line,captured_aps):
-							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
 						else:
-							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 					else:
 						if detector1.rogueAP_detector(line,captured_aps):	
 							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
@@ -74,7 +74,7 @@ def get_results(interface):
 def filter_aps(access_point):
     for ap in captured_aps:
 		try:		
-			if ap['mac'] == access_point['mac'] and ap['essid']==access_point['essid'] and ap['channel'] == access_point['channel']:
+			if ap['mac'] == access_point['mac'] and ap['essid']==access_point['essid'] and ap['channel'] == access_point['channel'] and ap['key type'] == access_point['key type'] and ap['group cipher'] == access_point['group cipher'] :
 				return False
 		except Exception as e: 
 			print "Exception found: \n"+e
