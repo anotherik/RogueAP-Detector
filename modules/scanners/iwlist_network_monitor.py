@@ -21,7 +21,7 @@ class colors:
         GRAY = '\033[90m'
         UNDERLINE = '\033[4m'
 
-def scan(interface, output, queue):
+def scan(interface, queue):
 
 	global table_of_manufacturers
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
@@ -30,30 +30,31 @@ def scan(interface, output, queue):
 	print colors.WARNING + '{:^22s}|{:^19s}|{:^9s}|{:^24s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9]) + colors.ENDC
 	while True:
 		ap_list = get_results(interface)
+		#print ap_list
 		try:
-			with open(output,'a') as output_file:
-				for line in ap_list:
-					# filter to check if APs already exists 
-					if filter_aps(line):	     
-						limited = False
-						if len(line['essid'])>21:
-							limited = True
-						
-						if limited:
-							if detector1.rogueAP_detector(line,captured_aps):
-								print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
-							else:
-								print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+			for line in ap_list:
+				#print line
+				# filter to check if APs already exists 
+				if filter_aps(line):	     
+					limited = False
+					if len(line['essid'])>21:
+						limited = True
+					
+					if limited:
+						if detector1.rogueAP_detector(line,captured_aps):
+							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
 						else:
-							if detector1.rogueAP_detector(line,captured_aps):	
-								print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
-							else:
-								print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['signal'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+					else:
+						if detector1.rogueAP_detector(line,captured_aps):	
+							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+						else:
+							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 
-						captured_aps.append(line)
-						queue.put(line)
-						json.dump(line,output_file)
-						output_file.write("\n")	
+					captured_aps.append(line)
+					#print captured_aps
+					queue.put(line)
+
 			time.sleep(1)
 		except:
 			pass
