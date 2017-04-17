@@ -22,7 +22,7 @@ vendor = ""
 spaces = 0
 
 global current_ch
-current_ch = 1
+current_ch = 6
 
 class colors:
 	HEADER = '\033[95m'
@@ -44,7 +44,7 @@ def aps_lookup(pkt):
 		current_ch = 1
 	os.system("iw dev %s set channel %d" % (interface, current_ch) )
 	#os.system("iwconfig %s channel %s" % (interface, current_ch) )
-	time.sleep(0.1)
+	#time.sleep(0.1)
 
 	# we are checking if ssid is already in the access_points list (and we also want same ssid with different bssid)
 	if ( (pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp)) and (pkt[Dot11].addr3 not in access_points) ):

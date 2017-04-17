@@ -42,18 +42,19 @@ def scan(interface, queue):
 					
 					if limited:
 						if detector1.rogueAP_detector(line,captured_aps):
-							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
 						else:
-							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 					else:
-						if detector1.rogueAP_detector(line,captured_aps):	
-							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+						if detector1.rogueAP_detector(line,captured_aps):
+							print colors.FAIL2 + '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
 						else:
-							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['comment'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+							print '{:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 
 					captured_aps.append(line)
 					#print captured_aps
 					queue.put(line)
+					
 
 			time.sleep(1)
 		except:
@@ -73,8 +74,11 @@ def get_results(interface):
 
 def filter_aps(access_point):
     for ap in captured_aps:
-		try:		
-			if ap['mac'] == access_point['mac'] and ap['essid']==access_point['essid'] and ap['channel'] == access_point['channel'] and ap['key type'] == access_point['key type'] and ap['group cipher'] == access_point['group cipher'] :
+		try:
+			#print "a= " + str(float(ap['quality_calc']))
+			#print "b= " + str(float(access_point['quality_calc']))
+			#print "diff =" + str( abs((float(ap['quality_calc'])) - (float(access_point['quality_calc']))) )
+			if ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] == access_point['channel'] and ap['key type'] == access_point['key type'] and ap['group cipher'] == access_point['group cipher'] and ( abs( float(ap['quality_calc']) - float(access_point['quality_calc']) ) <= 0.25 ):
 				return False
 		except Exception as e: 
 			print "Exception found: \n"+e
@@ -131,9 +135,14 @@ def parse(list):
 			match = re.search('Quality=(\d+/\d+)  Signal level=(-\d+) dBm',network)
 			if match: 
 			    quality = match.group(1)
-			    #quality = str(int(round(float(quality[0]) / float(quality[1]) * 100))).rjust(3) + " %"
+			    a = quality[0:2]
+			    b = quality[3:5]
+			    quality_calc = format((float(a)/float(b)), '.2f')
+			    # print quality_calc
+			    # quality = str(int(round(float(quality[0]) / float(quality[1]) * 100))).rjust(3) + " %"
 			    signal = match.group(2)
 			    ap.update({"quality":quality})
+			    ap.update({"quality_calc":quality_calc})
 			    ap.update({"signal":signal})		
 			
 			#Check if there is an Encryption key on the AP
