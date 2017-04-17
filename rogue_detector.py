@@ -7,18 +7,21 @@
 import os, string, threading, sys, signal, time, Queue
 import modules.scanners.iwlist_network_monitor as iwlist_monitor
 import modules.scanners.scapy_network_monitor as scapy_monitor
+import modules.detectors.evil_twin_detector as detector1
+import modules.actuators.createRogueAP as hive
 
 class colors:
-        HEADER = '\033[95m'
-        OKBLUE = '\033[94m'
-        OKGREEN = '\033[92m'
-        WHITE = '\033[37m'
-        WARNING = '\033[93m'
-        FAIL = '\033[91m'
-        ENDC = '\033[0m'
-        BOLD = '\033[1m'
-        GRAY = '\033[90m'
-        UNDERLINE = '\033[4m'
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WHITE = '\033[37m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ORANGE ='\033[33m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    GRAY = '\033[90m'
+    UNDERLINE = '\033[4m'
 
 class my_thread(threading.Thread):
 	def __init__(self, function):
@@ -38,12 +41,19 @@ def print_info(info, type=0):
         print(m)
 
 def intro():
-	print(colors.BOLD + "\n\t==== Rogue Access Point Detector ====\n" + colors.ENDC)
+	print(colors.BOLD +
+	 "                               _    ____    ____       _            _     \n"+
+	 " _ __ ___   __ _ _   _  ___   / \  |  _ \  |  _ \  ___| |_ ___  ___| |_ \n" +
+	 "| '__/ _ \ / _` | | | |/ _ \ / _ \ | |_) | | | | |/ _ \ __/ _ \/ __| __| \n" +
+	 "| | | (_) | (_| | |_| |  __// ___ \|  __/  | |_| |  __/ ||  __/ (__| |_ \n"+
+	 "|_|  \___/ \__, |\__,_|\___/_/   \_\_|     |____/ \___|\__\___|\___|\__| \n "+
+	 "          |___/                                                   v1.0\n"+
+     "\t\t\t\tby Ricardo Gonçalves (@anotherik)\n"+ colors.ENDC)
 
 def usage():
 	print_info("Usage: python rogue-detector.py [option]")
 	print("\nOptions:  -i interface\t  -> the interface to monitor the network")
-	print("\t  -m mode\t  -> scanning mode (iwlist or scapy)")
+	print("\t  -m mode\t  -> scanning mode (iwlist, scapy, hive)")
 
 # optional: change the mac address of the interface performing the scan 
 def change_mac(iface):
@@ -72,6 +82,7 @@ def disable_monitor(iface):
 
 def signal_handler(signal, frame):
 	print colors.GRAY + "\nYou pressed Ctrl+C!\nGoodbye!" + colors.ENDC
+	detector1.statistics()
 	sys.exit(0)
 
 # parse the input arguments
@@ -91,7 +102,7 @@ def parse_args():
 	if (cmd == "-m"):
 		mode = sys.argv[4]
 		scan_queue = ""
-		modes = ["scapy", "iwlist"]
+		modes = ["scapy", "iwlist","hive"]
 		if (mode == "scapy"):
 			enable_monitor(interface)
 			scapy_monitor.scapy_scan(interface)
@@ -100,7 +111,12 @@ def parse_args():
 			scan_queue = Queue.Queue()
 			scan_thread = my_thread(lambda: iwlist_monitor.scan(interface, scan_queue))
 			scan_thread.daemon = True
-			scan_thread.start()	
+			scan_thread.start()
+		if (mode == "hive"):
+			enable_monitor(interface)
+			hive.startRogueAP(interface)
+			# config a file to load the AP parameters
+			# os.system("./createRogueAP.sh") # read params from config file
 		if (mode not in modes):
 			print ("Wrong module selected!\n")
 			usage()
