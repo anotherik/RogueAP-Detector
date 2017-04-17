@@ -13,6 +13,7 @@ printf "setting up monitor mode...\n"
 ifconfig $iface down
 iwconfig $iface mode monitor
 ifconfig $iface up
+iw dev $iface set channel $channel
 
 while [ True ]; do
   trap ctrl_c INT
@@ -27,7 +28,7 @@ while [ True ]; do
   }
 
   printf "starting AP...\n"
-  airbase-ng -a $bssid -e $essid -c $channel $iface
+  airbase-ng -e $essid -a $bssid -W 1 -Z 2 $iface # [-W 1 (for wep)/ -W 1 -z 2 (for wpa)/ -W 1 -Z 2 (for wpa2)] -c $channel
 done
 
 printf "done2"
