@@ -4,136 +4,120 @@
 # version: 0.1
 # author: anotherik (Ricardo Gonçalves)
 
-import os, string, threading, sys, signal, time, Queue
+import os, string, threading, sys, signal, time, Queue, multiprocessing
 import modules.scanners.iwlist_network_monitor as iwlist_monitor
 import modules.scanners.scapy_network_monitor as scapy_monitor
 import modules.detectors.evil_twin_detector as detector1
-import modules.actuators.createRogueAP as hive
-
-class colors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WHITE = '\033[37m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ORANGE ='\033[33m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    GRAY = '\033[90m'
-    UNDERLINE = '\033[4m'
-
-class my_thread(threading.Thread):
-	def __init__(self, function):
-		threading.Thread.__init__(self)
-		self.function=function
-	def run(self):
-		self.function()
+import modules.actuators.createRogueAP as hive_mode
+import modules.manage_interfaces as manage_interfaces
+import modules.colors as colors
 
 def print_info(info, type=0):
-        if (type == 0):
-                m = colors.OKBLUE
-        elif (type == 1):
-                m = colors.OKGREEN
-        elif (type == 2):
-                m = TEXT_RED
-        m += "[*] " + colors.ENDC + colors.BOLD + info + colors.ENDC
-        print(m)
+    if (type == 0):
+        m = colors.get_color("OKBLUE")
+    elif (type == 1):
+        m = colors.get_color("OKGREEN")
+    elif (type == 2):
+        m = colors.get_color("WARNING")
+    m += "[*] " + colors.get_color("ENDC") + colors.get_color("BOLD") + info + colors.get_color("ENDC")
+    print(m)
 
 def intro():
-	print(colors.BOLD +
+	print(colors.get_color("BOLD") +
 	 "                               _    ____    ____       _            _     \n"+
 	 " _ __ ___   __ _ _   _  ___   / \  |  _ \  |  _ \  ___| |_ ___  ___| |_ \n" +
 	 "| '__/ _ \ / _` | | | |/ _ \ / _ \ | |_) | | | | |/ _ \ __/ _ \/ __| __| \n" +
 	 "| | | (_) | (_| | |_| |  __// ___ \|  __/  | |_| |  __/ ||  __/ (__| |_ \n"+
 	 "|_|  \___/ \__, |\__,_|\___/_/   \_\_|     |____/ \___|\__\___|\___|\__| \n "+
 	 "          |___/                                                   v1.0\n"+
-     "\t\t\t\tby Ricardo Gonçalves (@anotherik)\n"+ colors.ENDC)
+     "\t\t\t\tby Ricardo Gonçalves (@anotherik)\n"+ colors.get_color("ENDC"))
 
 def usage():
-	print_info("Usage: python rogue-detector.py [option]")
-	print("\nOptions:  -i interface\t  -> the interface to monitor the network")
-	print("\t  -m mode\t  -> scanning mode (iwlist, scapy, hive)")
+	print_info("Usage: ./rogue_detector.py [option]")
+	print("\nOptions:  -i interface\t\t -> the interface to monitor the network")
+	print("\t  -p profile\t\t -> name of the profile to load")
+	print("\t  -s scan_type\t\t -> name of scanning type (iwlist, scapy)")
+	print("\t  -h hive_mode\t\t -> creates an AP")
+	print("\t  -d deauth\t\t -> deauthenticates users from target AP")
 
-# optional: change the mac address of the interface performing the scan 
-def change_mac(iface):
-	print(colors.GRAY+"Changing the interface mac address..."+colors.ENDC)
-	os.system("ifconfig %s down" % iface)
-	chars = string.digits +string.ascii_lowercase
-	new_mac = ''.join(random.choice(chars) for _ in range(6))
-	new_mac =  "00:36:29"+":"+new_mac[3:6]+":"+new_mac[6:8]+":"+new_mac[8:]
-	print(colors.OKBLUE+"your new MAC address: %s" % new_mac +colors.ENDC)
-	os.system("ifconfig %s hw ether %s" %(iface,new_mac))
-	os.system("ifconfig %s up" % iface)
-
-# enable monitor mode to the given interface
-def enable_monitor(iface):
-	print("Changing "+str(iface)+" to monitor mode.")
-	os.system("ifconfig %s down" % iface)
-	os.system("iwconfig %s mode monitor" % iface)
-	os.system("ifconfig %s up" % iface)
-
-# disable monitor mode to the given interface
-def disable_monitor(iface):
-	print("Changing "+str(iface)+" to managed mode.")
-	os.system("ifconfig %s down" % iface)
-	os.system("iwconfig %s mode managed" % iface)
-	os.system("ifconfig %s up" % iface)
-
-def signal_handler(signal, frame):
-	print colors.GRAY + "\nYou pressed Ctrl+C!\nGoodbye!" + colors.ENDC
-	detector1.statistics()
-	sys.exit(0)
-
-# parse the input arguments
 def parse_args():
 	intro()
-	if (len(sys.argv) < 5):
+	scanners = ["scapy", "iwlist"]
+	scanner_type = ""
+	profile, scan, hive, deauth = False, False, False, False
+
+	if (len(sys.argv) < 4):
 		usage()
 		return
-	cmd = sys.argv[1]
-	if (cmd == "-i"):
-		global interface
-		interface = sys.argv[2]
-		file = "temporary_scan.txt"
-		#change_mac(interface)
 
-	cmd = sys.argv[3]
-	if (cmd == "-m"):
-		mode = sys.argv[4]
-		scan_queue = ""
-		modes = ["scapy", "iwlist","hive"]
-		if (mode == "scapy"):
-			enable_monitor(interface)
-			scapy_monitor.scapy_scan(interface)
-			#scan_thread = my_thread(lambda: scapy_monitor.scapy_scan(interface))
-		if (mode == "iwlist"):
-			scan_queue = Queue.Queue()
-			scan_thread = my_thread(lambda: iwlist_monitor.scan(interface, scan_queue))
-			scan_thread.daemon = True
-			scan_thread.start()
-		if (mode == "hive"):
-			enable_monitor(interface)
-			hive.startRogueAP(interface)
-			# config a file to load the AP parameters
-			# os.system("./createRogueAP.sh") # read params from config file
-		if (mode not in modes):
-			print ("Wrong module selected!\n")
+	# setting args
+	for cmd in sys.argv:
+
+		if (cmd == "-i"):
+			global interface
+			interface = sys.argv[sys.argv.index(cmd)+1]
+
+		if (cmd == "-p"):
+			profile_name = sys.argv[sys.argv.index(cmd)+1]
+			if(os.path.isfile(profile_name+".txt")):
+				profile = True
+			else:
+				print (colors.get_color("FAIL")+ "Profile selected does not exists!\n"+ colors.get_color("ENDC"))
+				return
+			
+		if (cmd == "-s"):
+			scan = True
+			scanner_type = sys.argv[sys.argv.index(cmd)+1]
+
+		if (cmd == "-h"):
+			hive = True
+
+		if (cmd == "-d"):
+			deauth = True	
+
+			
+	if (scan):		
+		if (scanner_type == "scapy"):
+			manage_interfaces.change_mac(interface)
+			manage_interfaces.enable_monitor(interface)
+			try:
+				if (profile):
+					scapy_monitor.scapy_scan(interface, profile_name)
+				else: 
+					scapy_monitor.scapy_scan(interface)
+			except Exception as e:
+				print("Exception: %s" % e)
+				return
+		
+		if (scanner_type == "iwlist"):
+			try:
+				if (profile):
+					iwlist_monitor.scan(interface, profile_name)
+				else:
+					iwlist_monitor.scan(interface)
+			except Exception as e:
+				print("Exception: %s" %e)
+				return
+
+		if (scanner_type not in scanners):
+			print (colors.get_color("FAIL")+ "Wrong module selected!\n"+ colors.get_color("ENDC"))
 			usage()
 			return
-		
-		time.sleep(2)
-		while True:
-			signal.signal(signal.SIGINT, signal_handler)
-			if(scan_queue == ""):
-				continue
-			if(scan_queue.empty() == False):
-				ap_info = scan_queue.get()
-			time.sleep(0.3)			
 
-	else:
-		usage()
-		return
+	if (hive):
+		iface_hive = raw_input("Enter the Interface for the Hive: ")
+		iface_hive = str(iface_hive)
+		try:	
+			manage_interfaces.enable_monitor(iface_hive)
+			p = multiprocessing.Process(hive_mode.startRogueAP(iface_hive))
+			p.start()
+			p.join()
+		except Exception as e:
+			print("Exception: %s" % e)
+			return
+			# config a file to load the AP parameters
+			# os.system("./createRogueAP.sh") # read params from config file
+
 
 def main():
 	parse_args()
