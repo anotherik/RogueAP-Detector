@@ -1,4 +1,6 @@
 import modules.colors as colors
+import modules.actuators.associate as associateTo
+import Queue, multiprocessing
 
 def authorized_aps(ssid, bssid, rssi, encryption, profile):
 
@@ -44,7 +46,13 @@ def authorized_aps_iwlist(scanned_ap, profile):
 						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, different encryption." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
 						break
 					if ( abs(int(scanned_ap['signal'])) > auth_rssi+15 or abs(int(scanned_ap['signal'])) < auth_rssi-15 ):
-					 	print(colors.get_color("FAIL")+"[%s | %s] Stange RSSI!!! Associate?" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
-					 	#call associate
+					 	print(colors.get_color("FAIL")+"[%s | %s] Stange RSSI!!! Associate? (y/n)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
+					 	associate = str(raw_input())
+					 	if(associate=="y"):
+					 		pwd = str(raw_input("Enter AP password: "))
+					 		iface = str(raw_input("Choose interface to association process: "))
+					 		p = multiprocessing.Process(associateTo.associate(scanned_ap['essid'],scanned_ap['mac'],pwd,iface))
+					 	else:
+					 		break
 				else:
 					print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC") )	

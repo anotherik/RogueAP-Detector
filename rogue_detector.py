@@ -7,7 +7,6 @@
 import os, string, threading, sys, signal, time, Queue, multiprocessing
 import modules.scanners.iwlist_network_monitor as iwlist_monitor
 import modules.scanners.scapy_network_monitor as scapy_monitor
-import modules.detectors.evil_twin_detector as detector1
 import modules.actuators.createRogueAP as hive_mode
 import modules.manage_interfaces as manage_interfaces
 import modules.colors as colors

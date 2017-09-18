@@ -2,7 +2,7 @@
 # Network monitor using iwlist
 import subprocess, sys, time, re, json, os, signal
 import manufacturer.parse_manufacturer as manufacturer
-import modules.detectors.evil_twin_detector as detector1
+import modules.detectors.noknowled_detector as detector1
 import modules.logs.logs_api as logs_api
 import modules.detectors.passive_detectors as passive_detectors
 
@@ -27,8 +27,7 @@ class colors:
         UNDERLINE = '\033[4m'
 
 def signal_handler(signal, frame):
-	print colors.GRAY + "\nYou pressed Ctrl+C!\nGoodbye!" + colors.ENDC
-	#detector1.statistics()
+	print colors.GRAY + "\nExiting...\nGoodbye!" + colors.ENDC
 	sys.exit(0)
 
 def scan(*arg):
