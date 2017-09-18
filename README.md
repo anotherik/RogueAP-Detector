@@ -9,11 +9,13 @@ Identify Rogue Access Points in a network
 	Scanners  Module: Methods to scan the network  
 
 ## Usage
-python2 rogue_detector.py [option]  
+./rogue_detector.py [option]  
 Options:  
--i "interface"		-> interface to monitor the network  
--m "mode"			-> scanning mode  
--d "detector"		-> detector type  
+-i interface		-> interface to monitor the network  
+-p profile              -> name of the profile to load
+-s scan_type            -> name of scanning type (iwlist, scapy)  
+-h hive_mode		-> creates an AP
+-d deauth               -> deauthenticates users from target AP  
 
 ## Dependencies
 python2.7  
