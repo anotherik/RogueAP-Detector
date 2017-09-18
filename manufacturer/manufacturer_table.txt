@@ -542,6 +542,7 @@
 00:01:E5	Supernet               # Supernet, Inc.
 00:01:E6	HewlettP               # Hewlett Packard
 00:01:E7	HewlettP               # Hewlett Packard
+34:FC:B9    HewlettP               # Hewlett Packard Enterprise
 00:01:E8	Force10N               # Force10 Networks, Inc.
 00:01:E9	LittonMa               # Litton Marine Systems B.V.
 00:01:EA	Cirilium               # Cirilium Corp.
