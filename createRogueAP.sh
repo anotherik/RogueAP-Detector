@@ -28,7 +28,7 @@ while [ True ]; do
   }
 
   printf "starting AP...\n"
-  airbase-ng -e $essid -a $bssid -W 1 -Z 2 $iface # [-W 1 (for wep)/ -W 1 -z 2 (for wpa)/ -W 1 -Z 2 (for wpa2)] -c $channel
+  airbase-ng -e $essid -a $bssid -W 1 -Z 2 -c $channel $iface # [-W 1 (for wep)/ -W 1 -z 2 (for wpa)/ -W 1 -Z 2 (for wpa2), -Z 2 = TKIP and -Z 4 = CCMP] -c $channel
 done
 
 printf "done2"
