@@ -10,3 +10,9 @@ modules/scanners/iwlist_network_monitor.pyc
 modules/scanners/scapy_network_monitor.pyc
 data/__init__.pyc
 data/manipulate_db.pyc
+idea
+dump1.txt
+error_log.txt
+softAP.sh
+profile.txt
+rogueAP_configs.txt
