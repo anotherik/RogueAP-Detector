@@ -8,6 +8,7 @@ def associate(ap_name,bssid,pwd,iface):
 	else:
 		print("Trying to associate...")
 		os.system("nmcli dev wifi connect "+ap_name+" password "+pwd+" bssid "+bssid+" ifname "+iface)
+		# call active detectors
 		os.system("ifconfig %s" % iface)
 		os.system("dig +short myip.opendns.com @resolver1.opendns.com")
 		internal_ip = os.system("ifconfig $1 | grep 'inet ' | awk -F' ' '{print $2}' | tail -1")
