@@ -24,3 +24,6 @@ softAP.sh
 profile.txt
 rogueAP_configs.txt
 rogue_detector.py.bak
+dump_enx_PineAP.txt
+dump_2_enx_PineAP.txt
+testGetProbeResp.py
