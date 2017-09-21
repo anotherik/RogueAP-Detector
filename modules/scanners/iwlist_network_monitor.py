@@ -50,7 +50,8 @@ def scan(*arg):
 					if len(line['essid'])>21:
 						limited = True
 					
-					passive_detectors.authorized_aps_iwlist(line, profile)	
+					passive_detectors.authorized_aps_iwlist(line, profile)
+					passive_detectors.spot_karma(line)	
 
 					if limited:
 						if detector1.rogueAP_detector(line,captured_aps):
@@ -93,7 +94,7 @@ def filter_aps(access_point):
 			#print "***************************************************"
 			#print abs(int(access_point['signal']))
 			#print abs(int(ap['signal']))
-			if ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] == access_point['channel'] and ap['key type'] == access_point['key type'] and ap['group cipher'] == access_point['group cipher'] and ( abs(int(access_point['signal'])) <= abs(int(ap['signal']))+15 and abs(int(access_point['signal'])) >= abs(int(ap['signal']))-15):
+			if ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] == access_point['channel'] and ap['key type'] == access_point['key type'] and ap['group cipher'] == access_point['group cipher'] and ( abs(int(access_point['signal'])) <= abs(int(ap['signal']))+20 and abs(int(access_point['signal'])) >= abs(int(ap['signal']))-20):
 				return False
 		except Exception as e: 
 			logs_api.errors_log("Exception found: "+str(e))
