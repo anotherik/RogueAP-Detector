@@ -43,7 +43,7 @@ def parse_args():
 	intro()
 	scanners = ["scapy", "iwlist"]
 	scanner_type = ""
-	profile, scan, hive, deauth = False, False, False, False
+	profile, scan, hive, deauth, active_probing = False, False, False, False, False
 
 	if (len(sys.argv) < 4):
 		usage()
@@ -55,6 +55,10 @@ def parse_args():
 		if (cmd == "-i"):
 			global interface
 			interface = sys.argv[sys.argv.index(cmd)+1]
+
+		if (cmd == "-im"):
+			global interface_monitor
+			interface_monitor = sys.argv[sys.argv.index(cmd)+1]
 
 		if (cmd == "-p"):
 			profile_name = sys.argv[sys.argv.index(cmd)+1]
@@ -72,7 +76,10 @@ def parse_args():
 			hive = True
 
 		if (cmd == "-d"):
-			deauth = True	
+			deauth = True
+
+		if (cmd == "-a"):
+			active_probing = True	
 
 			
 	if (scan):		
@@ -90,7 +97,11 @@ def parse_args():
 		
 		if (scanner_type == "iwlist"):
 			try:
-				if (profile):
+				if (profile and active_probing):
+					manage_interfaces.change_mac(interface_monitor)
+					manage_interfaces.enable_monitor(interface_monitor)
+					iwlist_monitor.scan(interface, profile_name, active_probing, interface_monitor)
+				elif (profile):
 					iwlist_monitor.scan(interface, profile_name)
 				else:
 					iwlist_monitor.scan(interface)

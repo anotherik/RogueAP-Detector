@@ -5,6 +5,7 @@ import manufacturer.parse_manufacturer as manufacturer
 import modules.detectors.noknowled_detector as detector1
 import modules.logs.logs_api as logs_api
 import modules.detectors.passive_detectors as passive_detectors
+import Queue, multiprocessing
 
 captured_aps = []
 manufacturer_table = "manufacturer/manufacturer_table.txt"
@@ -33,6 +34,10 @@ def signal_handler(signal, frame):
 def scan(*arg):
 	interface = arg[0]
 	profile = arg[1]
+	if(len(arg)>2):
+		active_probing = arg[2]
+		interface_monitor = arg[3]
+
 	global table_of_manufacturers
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
 
@@ -51,7 +56,12 @@ def scan(*arg):
 						limited = True
 					
 					passive_detectors.authorized_aps_iwlist(line, profile)
-					passive_detectors.spot_karma(line)	
+					passive_detectors.spot_karma(line)
+					passive_detectors.spoting_PineAP(line)
+					#if (active_probing):
+					#	p = multiprocessing.Process(passive_detectors.spoting_PineAP(line, active_probing, interface_monitor))
+					#else:
+					#	passive_detectors.spoting_PineAP(line)
 
 					if limited:
 						if detector1.rogueAP_detector(line,captured_aps):
