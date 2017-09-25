@@ -11,8 +11,8 @@ modules/scanners/__init__.pyc
 modules/scanners/iwlist_network_monitor.pyc
 modules/scanners/scapy_network_monitor.pyc
 modules/actuators/createRogueAP.pyc
-modules/actuators/associate.pyc
-modules/actuators/associateAP.pyc
+modules/actuators/active_detectors.pyc
+modules/actuators/associate_model.pyc
 modules/colors.pyc
 modules/manage_interfaces.pyc
 data/__init__.pyc
@@ -28,3 +28,6 @@ dump_enx_PineAP.txt
 dump_2_enx_PineAP.txt
 testGetProbeResp.py
 dump_3_enx_PineAP.txt
+nmcli_commands.txt
+findWhoIsIP.py
+09-24-2017_19:28:12
