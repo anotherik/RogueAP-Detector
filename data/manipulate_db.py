@@ -5,8 +5,8 @@
 import sqlite3
 
 # create/open a (new) database inside the folder data
-def open_db(): #dbname
-	conn = sqlite3.connect(":memory:") #'data/'+dbname+'.db'
+def open_db(): # dbname
+	conn = sqlite3.connect(":memory:") # ":memory:" to store databse in memmory - 'data/'+dbname+'.db'
 	#print("Opened database successfully")
 	return conn
 

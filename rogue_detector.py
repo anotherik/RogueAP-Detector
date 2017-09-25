@@ -62,7 +62,7 @@ def parse_args():
 
 		if (cmd == "-p"):
 			profile_name = sys.argv[sys.argv.index(cmd)+1]
-			if(os.path.isfile(profile_name+".txt")):
+			if(os.path.isfile(profile_name)):
 				profile = True
 			else:
 				print (colors.get_color("FAIL")+ "Profile selected does not exists!\n"+ colors.get_color("ENDC"))
@@ -115,8 +115,7 @@ def parse_args():
 			return
 
 	if (hive):
-		iface_hive = raw_input("Enter the Interface for the Hive: ")
-		iface_hive = str(iface_hive)
+		iface_hive = interface_monitor
 		try:	
 			manage_interfaces.enable_monitor(iface_hive)
 			p = multiprocessing.Process(hive_mode.startRogueAP(iface_hive))
