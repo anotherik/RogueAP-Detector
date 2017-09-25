@@ -54,7 +54,7 @@ def aps_lookup(pkt):
 		else: encryption = "0"
 
 		# call passive detectors
-		passive_detectors.authorized_aps(ssid, bssid, sig_str, encryption, profile)
+		passive_detectors.authorized_aps_scapy(ssid, bssid, sig_str, encryption, profile)
 
 		spaces = 23 - len(ssid)
 		spaces = ' '*spaces

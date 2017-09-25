@@ -2,7 +2,7 @@
 # Network monitor using iwlist
 import subprocess, sys, time, re, json, os, signal
 import manufacturer.parse_manufacturer as manufacturer
-import modules.detectors.noknowled_detector as detector1
+import modules.detectors.noknowled_detector as noknowled_detector
 import modules.logs.logs_api as logs_api
 import modules.detectors.passive_detectors as passive_detectors
 import Queue, multiprocessing
@@ -32,8 +32,10 @@ def signal_handler(signal, frame):
 	sys.exit(0)
 
 def scan(*arg):
+	active_probing, profile = False, False
 	interface = arg[0]
-	profile = arg[1]
+	if(len(arg)>1):
+		profile = arg[1]
 	if(len(arg)>2):
 		active_probing = arg[2]
 		interface_monitor = arg[3]
@@ -54,25 +56,40 @@ def scan(*arg):
 					limited = False
 					if len(line['essid'])>21:
 						limited = True
-					
-					passive_detectors.authorized_aps_iwlist(line, profile)
-					passive_detectors.spot_karma(line)
-					passive_detectors.spoting_PineAP(line)
-					#if (active_probing):
-					#	p = multiprocessing.Process(passive_detectors.spoting_PineAP(line, active_probing, interface_monitor))
-					#else:
-					#	passive_detectors.spoting_PineAP(line)
+
+					# apply detections heuristics
 
 					if limited:
-						if detector1.rogueAP_detector(line,captured_aps):
-							print colors.FAIL2 + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+						if (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
+							print (colors.WHITE + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC)
+						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
+							print (colors.FAIL2 + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC)
+						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
+							print (colors.FAIL + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC)
 						else:
 							print '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
 					else:
-						if detector1.rogueAP_detector(line,captured_aps):
-							print colors.FAIL2 + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC
+						if (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
+							print (colors.WHITE + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC)
+						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
+							print (colors.FAIL2 + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC)
+						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
+							print (colors.FAIL + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites']) + colors.ENDC)
 						else:
 							print '{:^25s} {:<21s}  {:^19s} {:^9s} {:^24s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'])
+		
+					
+					if(profile):
+						passive_detectors.authorized_aps_iwlist(line, profile)
+					
+					passive_detectors.free_WiFis_detect(line, captured_aps)
+					passive_detectors.spot_karma(line)
+					
+					if (active_probing):
+						passive_detectors.spoting_PineAP(line, active_probing, interface_monitor)
+					else:
+						passive_detectors.spoting_PineAP(line)
+					# end of detections heuristics	
 
 					captured_aps.append(line)
 					#print captured_aps
@@ -86,7 +103,7 @@ def get_results(interface):
     list_of_results=[]
     try:
 		#Call the process to get the output to parse
-        proc = subprocess.check_output("iwlist "+interface+" scan",shell=True)
+        proc = subprocess.check_output("sudo iwlist "+interface+" scan",shell=True)
 		#Break the output making an array containing the info of each Access Point 
         list_of_results = re.split(r'\bCell \d{2}\b - ',proc)[1:]
     except subprocess.CalledProcessError:
