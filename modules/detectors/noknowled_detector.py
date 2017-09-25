@@ -3,29 +3,39 @@
 # author: anotherik (Ricardo Gonçalves)
 
 
-# the method will return in case of a detection
-def rogueAP_detector(access_point, captured_aps):
+def suspicious_behaviours(scanned_ap, captured_aps):
 
 	for ap in captured_aps:
 		try:
-			# type of rap (same ssid and dif bssid) (small change of RAP type)
-			if ap['essid'] == access_point['essid'] and ap['mac'] != access_point['mac']:
-				return True
-			# type of rap (same bssid and dif ssid)
-			elif ap['mac'] == access_point['mac'] and ap['essid'] != access_point['essid']:
-				return True
-			# type of rap (same ssid, same bssid and dif channel)
-			elif ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] != access_point['channel']:
-				return True
-			# type of rap (same ssid, same bssid and same channel)
-			elif ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] == access_point['channel']:
-				return True
-			# type of rap (same ssid, same bssid , same channel and same encryption)
-			elif ap['essid'] == access_point['essid'] and ap['mac'] == access_point['mac'] and ap['channel'] == access_point['channel'] and ap['key type'] == access_point['key type']:
-				return True
+			
+			# captured AP with same essid and dif bssid, print with gray to notify
+			if (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] != ap['mac']):
+				return "suspicious_1"
+
+			# captured AP with same bssid and dif essid (karma)
+			elif (scanned_ap['mac'] == ap['mac'] and scanned_ap['essid'] != ap['essid']):
+				return "suspicious_2"
+		
+			# captured AP with same essid, bssid and dif channel)
+			elif (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] == ap['mac'] and scanned_ap['channel'] != ap['channel']):
+				return "suspicious_3"
+
+			# captured AP with same essid, bssid and channel
+			elif (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] == ap['mac'] and scanned_ap['channel'] == ap['channel']):
+				return "suspicious_3"
+
+			# captured AP with same essid, bssid, channel and dif encryption
+			elif (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] == ap['mac'] and scanned_ap['channel'] == ap['channel'] and scanned_ap['key type'] != ap['key type']):
+				return "suspicious_4"
+
+			# captured AP with same essid, bssid, channel and encryption
+			elif (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] == ap['mac'] and scanned_ap['channel'] == ap['channel'] and scanned_ap['key type'] == ap['key type']):
+				return "suspicious_3"
+
 		except Exception as e:
 			print("Exception: %s" % e)
 			return
+
 	return False
 
 
