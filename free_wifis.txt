@@ -1,5 +1,5 @@
 # format of free_wifis configuration profile: SSID AP_VENDORs
 NOS_WIFI_Fon HitronTe
-MEO-WiFi Null
-STCP Azurewav
+MEO-WiFi Null PtInovac
+STCP Azurewav Vizio
 Euronext_Guest HewlettP ArubaNet
