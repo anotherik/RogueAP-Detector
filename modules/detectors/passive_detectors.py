@@ -19,7 +19,7 @@ import signal
 TIMEOUT = 5 # wait 5 second before skipping association process
 
 def interrupted(signum, frame):
-    print ('Skipping association...')
+    print (colors.get_color("GRAY")+'Skipping association...'+colors.get_color("ENDC"))
     sys.exit(0)
 
 def authorized_aps_scapy(ssid, bssid, rssi, encryption, profile):
@@ -92,21 +92,26 @@ def authorized_aps_iwlist(scanned_ap, profile):
 		next(f) #skipping first line
 		t = 0
 		for line in f:
+			
 			auth_ssid, auth_enc, auth_rssi = line.split()[0], line.split()[1], line.split()[2]
 			auth_rssi = int(auth_rssi)
-			nr_auth_aps = 5
+			nr_auth_aps = int(line.split()[3])
 			
 			if (scanned_ap['essid'] == auth_ssid):
 				auth_bssids = []
-				c = 3
+				c = 4
 				while c<len(line.split()):
 				 	auth_bssids.append(line.split()[c])
 				 	c+=1
+
+				if(c>5):
+					t = c-5
 
 				## DEBUG
 				#print ("scanned ap: %s" % scanned_ap['mac'])
 				#print ("auth bssids: %s" % auth_bssids) 	
 				if (scanned_ap['mac'] in auth_bssids): #(.lower())
+				
 					if (auth_enc != 'Open' and scanned_ap['key type'] == "Open"):
 						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, different encryption." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
 						break
@@ -130,6 +135,7 @@ def authorized_aps_iwlist(scanned_ap, profile):
 					 	else:
 					 		break
 				else:
+					
 					t+=1
 					##print "t = %s and nr_auth_aps = %s" % (t,nr_auth_aps)
 					if (t==nr_auth_aps):
@@ -229,8 +235,11 @@ def spoting_PineAP(*arg):
 	active_probing = False
 
 	default_bssid = ":13:37:"
-	if (default_bssid in scanned_ap['mac'] and scanned_ap['key type'] == "Open"):
-		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp produced RAP." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
+	if (default_bssid in scanned_ap['mac']):
+		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp RAP. (Acc: 1)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
+
+	elif (default_bssid in scanned_ap['mac'] and scanned_ap['key type'] == "Open"):
+		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp RAP. (Acc: 2)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))	
 
 	if(len(arg)>2):
 		active_probing = arg[1]
