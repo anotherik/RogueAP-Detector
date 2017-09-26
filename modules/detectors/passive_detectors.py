@@ -14,6 +14,13 @@ import modules.actuators.associate_model as associate
 import Queue, multiprocessing
 from itertools import imap
 from random import randint
+import signal
+
+TIMEOUT = 5 # wait 5 second before skipping association process
+
+def interrupted(signum, frame):
+    print ('Skipping association...')
+    sys.exit(0)
 
 def authorized_aps_scapy(ssid, bssid, rssi, encryption, profile):
 
@@ -35,7 +42,12 @@ def authorized_aps_scapy(ssid, bssid, rssi, encryption, profile):
 						break 
 					if ( abs(int(rssi)) > auth_rssi+15 or abs(int(rssi)) < auth_rssi-15 ):
 					 	print(colors.get_color("FAIL")+"[%s | %s] Stange RSSI!!! Associate? (y/n)" % (ssid,bssid) +colors.get_color("ENDC"))
-					 	assoc = str(raw_input())
+					 	try:
+					 		signal.alarm(TIMEOUT)
+					 		assoc = str(raw_input())
+					 		signal.alarm(0)
+					 	except:
+					 		assoc = "n"
 					 	if(assoc=="y"):
 						 	iface = str(raw_input("Choose an interface for the association process: "))
 						 	if (encryption == 0):
@@ -65,15 +77,25 @@ def authorized_aps_scapy(ssid, bssid, rssi, encryption, profile):
 					else:
 						break
 
+
+def yes_or_no():
+	try:
+		signal.signal(signal.SIGALRM, interrupted)
+ 		assoc = str(raw_input())
+ 		return assoc
+ 	except:	
+ 		pass
+
 def authorized_aps_iwlist(scanned_ap, profile):
 	
 	with open(profile,'r') as f:
 		next(f) #skipping first line
+		t = 0
 		for line in f:
 			auth_ssid, auth_enc, auth_rssi = line.split()[0], line.split()[1], line.split()[2]
 			auth_rssi = int(auth_rssi)
 			nr_auth_aps = 5
-			t = 0
+			
 			if (scanned_ap['essid'] == auth_ssid):
 				auth_bssids = []
 				c = 3
@@ -90,7 +112,12 @@ def authorized_aps_iwlist(scanned_ap, profile):
 						break
 					if ( abs(int(scanned_ap['signal'])) > auth_rssi+15 or abs(int(scanned_ap['signal'])) < auth_rssi-15 ):
 					 	print(colors.get_color("FAIL")+"[%s | %s] Strange RSSI!!! Associate? (y/n)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
-					 	assoc = str(raw_input())
+					 	
+				 		##print ("the timeout: %s" % TIMEOUT)
+				 		signal.alarm(TIMEOUT)
+				 		assoc = yes_or_no()
+				 		signal.alarm(0)
+					 	
 					 	if(assoc=="y"):
 					 		iface = str(raw_input("Choose an interface for the association process: "))
 						 	if (scanned_ap['key type'] == "Open"):
@@ -104,12 +131,17 @@ def authorized_aps_iwlist(scanned_ap, profile):
 					 		break
 				else:
 					t+=1
+					##print "t = %s and nr_auth_aps = %s" % (t,nr_auth_aps)
 					if (t==nr_auth_aps):
 						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC") )	
 
 			if ( scanned_ap['essid'] == "LAB_NETWORK"):
 				 	print(colors.get_color("FAIL")+"[%s | %s] Associate? (y/n)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
-				 	assoc = str(raw_input())
+				 	
+			 		signal.alarm(TIMEOUT)
+			 		assoc = yes_or_no()
+			 		signal.alarm(0)
+
 				 	if(assoc=="y"):
 					 	iface = str(raw_input("Choose an interface for the association process: "))
 					 	if (scanned_ap['key type'] == "Open"):
@@ -160,22 +192,25 @@ def gen_random_ssid():
 pineAP_ssids = []
 def gen_PineAp_ssid(scanned_ap):
 
+	# change to find by bssid!
 	default_name = "Pineapple"
-	if(default_name in scanned_ap['essid'] and scanned_ap['key type'] == "Open"): #based from neighbour Open networks around
+	default_bssid = ":13:37:"
+	#if(default_name in scanned_ap['essid'] and scanned_ap['key type'] == "Open"): #based from neighbour Open networks around
+	if(default_bssid in scanned_ap['mac'] and scanned_ap['key type'] == "Open"):
 		prefix = scanned_ap['mac'][12:].replace(":","")
 		pineAP_ssids.append(default_name+"_"+prefix)
 
 	##print pineAP_ssids
 	##random prefix
-	rand_prefix = ''.join(random.choice('0123456789ABCDEF') for i in range(4))
-	pineAP_ssids.append(default_name+"_"+rand_prefix)
+	#rand_prefix = ''.join(random.choice('0123456789ABCDEF') for i in range(4))
+	#pineAP_ssids.append(default_name+"_"+rand_prefix)
 
 
 def send_Probe_Req(interface):
 
 	for pineAP_ssid in pineAP_ssids:
 		
-		##print("Probing for %s" % pineAP_ssid)	
+		print("Probing for %s" % pineAP_ssid)	
 
 		broadcast = ":".join(["ff"]*6)
 		rand_bssid = new_mac = ':'.join(['%02x'%x for x in imap(lambda x:randint(0,255), range(6))])
@@ -203,13 +238,14 @@ def spoting_PineAP(*arg):
 		
 		p1 = multiprocessing.Process(gen_PineAp_ssid(scanned_ap))
 		p1.start()
-		p2 = multiprocessing.Process(send_Probe_Req(interface_monitor))
-		p2.start()
+		if(active_probing):
+			p2 = multiprocessing.Process(send_Probe_Req(interface_monitor))
+			p2.start()
 
-	#for pineAP_ssid in pineAP_ssids:
-	#	if(pineAP_ssid == scanned_ap['essid']):
-	#		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp produced RAP (hidden RAP)." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))			
-	
+	for pineAP_ssid in pineAP_ssids:
+		if(pineAP_ssid == scanned_ap['essid']):
+			print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp produced RAP (possible hidden RAP)." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))			
+			active_probing = False
 
 def free_WiFis_detect(scanned_ap, captured_aps):
 	
