@@ -1,16 +1,19 @@
-import os, random, string, sys
+import os, random, string, sys, time
 from itertools import imap
 from random import randint
 
 # optional: change the mac address of the interface performing the scan 
 def change_mac(iface):
 	print("Changing the interface mac address...")
-	os.system("ifconfig %s down" % iface)
-	new_mac = ':'.join(['%02x'%x for x in imap(lambda x:randint(0,255), range(6))])
+	os.system("sudo ifconfig %s down" % iface)
+	time.sleep(0.5)
+	mac_sufix = "00:10:FF:" 
+	mac_prefix = ':'.join(['%02x'%x for x in imap(lambda x:randint(0,255), range(3))])
+	new_mac = mac_sufix+mac_prefix.upper()
 	print("New MAC address: %s" % new_mac)
 	try:
-		os.system("ifconfig %s hw ether %s" %(iface,new_mac))
-		os.system("ifconfig %s up" % iface)
+		os.system("sudo ifconfig %s hw ether %s" %(iface,new_mac))
+		os.system("sudo ifconfig %s up" % iface)
 	except Exception as e:
 		print("Exception: %s" % e)
 		sys.exit(0)
