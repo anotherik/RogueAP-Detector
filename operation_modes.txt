@@ -1,0 +1,5 @@
+sudo ./rogue_detector.py -i wlp2s0 -im wlp0s20u2 -s iwlist -p profile.txt -a
+sudo ./rogue_detector.py -i wlp2s0 -s iwlist -p profile.txt
+sudo ./rogue_detector.py -i wlp2s0 -s iwlist
+
+sudo ./rogue_detector.py -im wlp0s20u2 -h
