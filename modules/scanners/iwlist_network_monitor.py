@@ -5,11 +5,14 @@ import manufacturer.parse_manufacturer as manufacturer
 import modules.detectors.noknowled_detector as noknowled_detector
 import modules.logs.logs_api as logs_api
 import modules.detectors.passive_detectors as passive_detectors
+import modules.manage_interfaces as manage_interfaces
 import Queue, multiprocessing
 
 captured_aps = []
 manufacturer_table = "manufacturer/manufacturer_table.txt"
 table_of_manufacturers = {}
+
+global interface_monitor
 
 def getTimeDate():
 	return time.strftime("%X") +" "+ time.strftime("%x")#time.strftime("%c")
@@ -28,6 +31,12 @@ class colors:
         UNDERLINE = '\033[4m'
 
 def signal_handler(signal, frame):
+	try:
+		manage_interfaces.disable_monitor(interface_monitor)
+	except Exception, err:
+		logs_api.errors_log(str(err))
+		pass
+
 	print colors.GRAY + "\nExiting...\nGoodbye!" + colors.ENDC
 	sys.exit(0)
 
@@ -38,6 +47,7 @@ def scan(*arg):
 		profile = arg[1]
 	if(len(arg)>2):
 		active_probing = arg[2]
+		global interface_monitor
 		interface_monitor = arg[3]
 
 	global table_of_manufacturers
