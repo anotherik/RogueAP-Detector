@@ -233,13 +233,16 @@ def spoting_PineAP(*arg):
 	
 	scanned_ap = arg[0] 
 	active_probing = False
-
+	alfa_brand = "Alfa"
 	default_bssid = ":13:37:"
 	if (default_bssid in scanned_ap['mac']):
 		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp RAP. (Acc: 1)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
 
 	elif (default_bssid in scanned_ap['mac'] and scanned_ap['key type'] == "Open"):
 		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp RAP. (Acc: 2)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))	
+
+	elif (alfa_brand in scanned_ap['manufacturer']):
+		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Blacklisted BSSID. (Acc: 1)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))	
 
 	if(len(arg)>2):
 		active_probing = arg[1]
@@ -255,6 +258,7 @@ def spoting_PineAP(*arg):
 		if(pineAP_ssid == scanned_ap['essid']):
 			print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] PineAp produced RAP (possible hidden RAP)." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))			
 			active_probing = False
+
 
 def free_WiFis_detect(scanned_ap, captured_aps):
 	
@@ -284,6 +288,8 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 					##print("inside 2 **************************")
 					
 					# in this situation we need to understand the pattern of the bssid and channel
+					if ("STCP" in captured_ap['essid']):
+						print (colors.get_color("OKGREEN")+"[%s | %s] Probable Auth Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
 
 					for captured_ap in captured_aps:
 						##print("inside 3 +++++++++++++++++++++++")	
@@ -337,3 +343,10 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 				else: # not in auth vendors
 					print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
 
+
+def check_tsf():
+	print ("soon...")
+
+	# scapy tsf 0000 days
+	# airbase tsf 17436 days
+	# RAPs will have lower tsf
