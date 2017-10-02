@@ -34,10 +34,14 @@ def intro():
 def usage():
 	print_info("Usage: ./rogue_detector.py [option]")
 	print("\nOptions:  -i interface\t\t -> the interface to monitor the network")
+	print("\t  -im interface\t\t -> interface for active mode")
 	print("\t  -p profile\t\t -> name of the profile to load")
 	print("\t  -s scan_type\t\t -> name of scanning type (iwlist, scapy)")
 	print("\t  -h hive_mode\t\t -> creates an AP")
 	print("\t  -d deauth\t\t -> deauthenticates users from target AP")
+	print("\t  -a active_mode\t -> activates random probe requests")
+
+	print(colors.get_color("BOLD")+"\nExample:  ./rogue_detector.py -i iface -s iwlist -p example_profile.txt"+colors.get_color("ENDC"))
 
 def parse_args():
 	intro()
