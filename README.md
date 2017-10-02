@@ -6,7 +6,7 @@ Identify Rogue Access Points in a network
 ## Rogue Access Point Detector
 
 	Detectors Module: Set of passive detectors to identify RogueAP types  
-	Acuators  Module: Set of active detectors to identify RogueAP types  
+	Actuators Module: Set of active detectors to identify RogueAP types  
 	Scanners  Module: Methods to scan the network  
 
 ## Usage
