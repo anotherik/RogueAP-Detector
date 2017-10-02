@@ -208,15 +208,15 @@ def gen_PineAp_ssid(scanned_ap):
 
 	##print pineAP_ssids
 	##random prefix
-	#rand_prefix = ''.join(random.choice('0123456789ABCDEF') for i in range(4))
-	#pineAP_ssids.append(default_name+"_"+rand_prefix)
+	rand_prefix = ''.join(random.choice('0123456789ABCDEF') for i in range(4))
+	pineAP_ssids.append(default_name+"_"+rand_prefix)
 
 
 def send_Probe_Req(interface):
 
 	for pineAP_ssid in pineAP_ssids:
 		
-		print("Probing for %s" % pineAP_ssid)	
+		##print("Probing for %s" % pineAP_ssid)	
 
 		broadcast = ":".join(["ff"]*6)
 		rand_bssid = new_mac = ':'.join(['%02x'%x for x in imap(lambda x:randint(0,255), range(6))])
@@ -232,7 +232,7 @@ def send_Probe_Req(interface):
 def spoting_PineAP(*arg):
 	
 	scanned_ap = arg[0] 
-	active_probing = False
+	#active_probing = False
 	alfa_brand = "Alfa"
 	default_bssid = ":13:37:"
 	if (default_bssid in scanned_ap['mac']):
@@ -288,8 +288,8 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 					##print("inside 2 **************************")
 					
 					# in this situation we need to understand the pattern of the bssid and channel
-					if ("STCP" in captured_ap['essid']):
-						print (colors.get_color("OKGREEN")+"[%s | %s] Probable Auth Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+					##if ("STCP" in captured_ap['essid']):
+					##	print (colors.get_color("OKGREEN")+"[%s | %s] Probable Auth Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
 
 					for captured_ap in captured_aps:
 						##print("inside 3 +++++++++++++++++++++++")	
