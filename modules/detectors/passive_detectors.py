@@ -22,62 +22,6 @@ def interrupted(signum, frame):
     print (colors.get_color("GRAY")+'Skipping association...'+colors.get_color("ENDC"))
     sys.exit(0)
 
-def authorized_aps_scapy(ssid, bssid, rssi, encryption, profile):
-
-	with open(profile,'r') as f:
-		next(f)
-		for line in f:
-			auth_ssid, auth_enc, auth_rssi = line.split()[0], line.split()[1], line.split()[2]
-			auth_rssi = int(auth_rssi)
-			if (ssid == auth_ssid):	
-				auth_bssids = []
-				c = 3
-				while c<len(line.split()):
-				 	auth_bssids.append(line.split()[c])
-				 	c+=1
-
-				if (bssid.upper() in auth_bssids):
-					if (auth_enc != 'Open' and encryption == "0"):
-						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, different encryption." % (ssid,bssid) +colors.get_color("ENDC"))
-						break 
-					if ( abs(int(rssi)) > auth_rssi+15 or abs(int(rssi)) < auth_rssi-15 ):
-					 	print(colors.get_color("FAIL")+"[%s | %s] Stange RSSI!!! Associate? (y/n)" % (ssid,bssid) +colors.get_color("ENDC"))
-					 	try:
-					 		signal.alarm(TIMEOUT)
-					 		assoc = str(raw_input())
-					 		signal.alarm(0)
-					 	except:
-					 		assoc = "n"
-					 	if(assoc=="y"):
-						 	iface = str(raw_input("Choose an interface for the association process: "))
-						 	if (encryption == 0):
-						 		p = multiprocessing.Process(associate.associateToAp(ssid,bssid,'',iface))
-						 		p.start()
-						 	else:
-						 		pwd = str(raw_input("Enter the AP password: "))
-						 		p = multiprocessing.Process(associate.associateToAp(ssid,bssid,pwd,iface))
-						 		p.start()
-						else:
-							break
-				else:
-					print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (ssid,bssid) +colors.get_color("ENDC") )	
-
-			if ( ssid == "LAB_NETWORK"):
-				 	print(colors.get_color("FAIL")+"[%s | %s] Associate? (y/n)" % (ssid,bssid) +colors.get_color("ENDC"))
-				 	assoc = str(raw_input())
-				 	if(assoc=="y"):
-					 	iface = str(raw_input("Choose an interface for the association process: "))
-					 	if (encryption == "0"):
-					 		p = multiprocessing.Process(associate.associateToAp(ssid,bssid,'',iface))
-					 		p.start()
-					 	else:
-					 		pwd = str(raw_input("Enter the AP password: "))
-					 		p = multiprocessing.Process(associate.associateToAp(ssid,bssid,pwd,iface))
-					 		p.start()
-					else:
-						break
-
-
 def yes_or_no():
 	try:
 		signal.signal(signal.SIGALRM, interrupted)
@@ -86,7 +30,7 @@ def yes_or_no():
  	except:	
  		pass
 
-def authorized_aps_iwlist(scanned_ap, profile):
+def authorized_aps(scanned_ap, profile):
 	
 	with open(profile,'r') as f:
 		next(f) #skipping first line

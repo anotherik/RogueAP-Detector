@@ -15,6 +15,8 @@ import data.manipulate_db as db_api
 import modules.manage_interfaces as manage_interfaces
 import modules.colors as colors
 import modules.detectors.passive_detectors as passive_detectors
+import modules.detectors.noknowled_detector as noknowled_detector
+import modules.logs.logs_api as logs_api
 
 manufacturer_table = "manufacturer/manufacturer_table.txt"
 table_of_manufacturers = {}
@@ -23,38 +25,66 @@ access_points = set()
 encryption = "0"
 vendor = ""
 spaces = 0
+captured_aps = []
+
 
 def aps_lookup(pkt):
 	global table_of_manufacturers
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
+
+	parsed_list = []
+	ap={}
 
 	# we are checking if ssid is already in the access_points list (and we also want same ssid with different bssid)
 	if ( (pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp)) and (pkt[Dot11].addr3 not in access_points) ):
 
 		access_points.add(pkt[Dot11].addr3)
 		ssid = pkt[Dot11].info
+		ap.update({"essid":ssid})
+
 		bssid = pkt[Dot11].addr3
+		ap.update({"mac":bssid.upper()})
+
 		channel = int(ord(pkt[Dot11Elt:3].info))
+		ap.update({"channel":channel})
+
 		capability = pkt.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}\
 		        {Dot11ProbeResp:%Dot11ProbeResp.cap%}")
 
 		extra = pkt.notdecoded
 		sig_str = -(256-ord(extra[-4:-3]))
 
+		ap.update({"signal":sig_str})
+
 		manufacturer_data = manufacturer.search(table_of_manufacturers,str(pkt.addr2))
 		if(manufacturer_data == []):
 			vendor = "Not Found"
+			ap.update({"manufacturer":"Null"})
 		else:
 			vendor = manufacturer_data[0].manuf
+			ap.update({"manufacturer":vendor})
 
 		if(str(vendor) == "None"):
 			vendor = "Not Found"	
 
-		if re.search("privacy", capability): encryption = "1"
-		else: encryption = "0"
+		if (re.search("privacy", capability)): 
+			encryption = "1"
+			key_type="Yes"
+			ap.update({"key type":key_type})
+		else: 
+			encryption = "0"
+			key_type="Open"
+			ap.update({"key type":key_type})
 
 		# call passive detectors
-		passive_detectors.authorized_aps_scapy(ssid, bssid, sig_str, encryption, profile)
+
+		##print ("The AP:\n %s" % ap)
+
+		passive_detectors.authorized_aps(ap, profile)
+		passive_detectors.free_WiFis_detect(ap, captured_aps)
+		passive_detectors.spot_karma(ap)
+
+		captured_aps.append(ap)
 
 		spaces = 23 - len(ssid)
 		spaces = ' '*spaces
@@ -77,12 +107,13 @@ def channel_hopper():
 			if(current_ch > 13):
 				current_ch = 1
 			#print("The current_ch: %s" % str(current_ch))	
-			os.system("iw dev %s set channel %d" % (interface, current_ch) )
+			os.system("sudo iw dev %s set channel %d" % (interface, current_ch) )
 			time.sleep(0.5)
 		except KeyboardInterrupt:
 			break
 
 def signal_handler(signal, frame):
+	print("\n=== Dumping APs from memory ===")
 	db_api.select_from_db(conn)
 	manage_interfaces.disable_monitor(interface)
 	print("Goodbye! ")

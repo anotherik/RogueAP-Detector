@@ -96,7 +96,7 @@ def scan(*arg):
 		
 					
 					if(profile):
-						passive_detectors.authorized_aps_iwlist(line, profile)
+						passive_detectors.authorized_aps(line, profile)
 					
 					passive_detectors.free_WiFis_detect(line, captured_aps)
 					passive_detectors.spot_karma(line)
