@@ -79,8 +79,8 @@ def aps_lookup(pkt):
 		# call passive detectors
 
 		##print ("The AP:\n %s" % ap)
-
-		passive_detectors.authorized_aps(ap, profile)
+		if (profile):
+			passive_detectors.authorized_aps(ap, profile)
 		passive_detectors.free_WiFis_detect(ap, captured_aps)
 		passive_detectors.spot_karma(ap)
 
@@ -124,6 +124,7 @@ def printHeader():
 
 def scapy_scan(*arg):
 	global interface, profile
+	profile = False
 	interface = arg[0]
 	if (len(arg)>1):
 		profile = arg[1]
