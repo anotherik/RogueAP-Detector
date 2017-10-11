@@ -58,7 +58,7 @@ def startRogueAP(i):
 			'\x00\x0f\xac\x04'         #AES Cipher
 			'\x00\x0f\xac\x02'         #TKIP Cipher
 			'\x01\x00'                 #1 Authentication Key Managment Suite (line below)
-			'54 0x6f 0x72 0x6f 0x6e 0x74 0x6f 0x2f 0x32 0x30 0x31 0x37 0x2f'         #Pre-Shared Key
+			'\x54\x6f\x72\x6f\x6e\x74\x6f\x2f\x32\x30\x31\x37\x2f'  #Pre-Shared Key
 			'\x00\x00'))               #RSN Capabilities (no extra capabilities)
 
 			pkt = radioTapHeader / dot11Header / dot11BeaconHeaderWPA / dot11Elt1 / dot11Elt2 / dot11Elt3 / dot11Elt4 / dot11Elt5 / rsn
