@@ -19,6 +19,5 @@ case "$choice" in
 	   exit 1
 esac
 
-printf "Installing Scapy..."
-pip install scapy
+pip install -r requirements.txt
 printf "Finished."
