@@ -21,6 +21,7 @@ Options:
 -a active_mode		-> activates random probe requests  
 
 Examples:  
+	
 	./rogue_detector.py -i iface -s iwlist -p example_profile.txt  
 	./rogue_detector.pu -i iface -s iwlist  
 	./rogue_detector.py -i iface -s scapy -p example_profile.txt  
