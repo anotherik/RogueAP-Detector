@@ -22,7 +22,7 @@ dump1.txt
 error_log.txt
 softAP.sh
 profile.txt
-rogueAP_configs.txt
+rogueAP_configs_backup.txt
 rogue_detector.py.bak
 dump_enx_PineAP.txt
 dump_2_enx_PineAP.txt
