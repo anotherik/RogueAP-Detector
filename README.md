@@ -20,7 +20,13 @@ Options:
 -d deauth               -> deauthenticates users from target AP  
 -a active_mode		-> activates random probe requests  
 
-Example: ./rogue_detector.py -i iface -s iwlist -p example_profile.txt  
+Examples:  
+	./rogue_detector.py -i iface -s iwlist -p example_profile.txt  
+	./rogue_detector.pu -i iface -s iwlist  
+	./rogue_detector.py -i iface -s scapy -p example_profile.txt  
+	./rogue_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  
+
+	./rogue_detector.py -im iface -h   
 
 ## Dependencies
 python2.7  
