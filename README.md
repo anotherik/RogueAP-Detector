@@ -33,4 +33,6 @@ Examples:
 
 ## Dependencies
 python2.7  
-scapy  
+scapy   
+
+To install the dependencies, run: **./dependencies.sh**  

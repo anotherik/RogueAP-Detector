@@ -1,14 +1,24 @@
 #!/bin/bash
-
-printf "Choose your distro:\n(1) Debian based\n(2) Red Hat based\n(3) Other\n"
+printf "  [Run as root] This will install all the required dependencies...\n"
+printf "  Choose your distro:\n\t(1) Debian based\n\t(2) Red Hat based\n\t(3) Arch\n"
 read choice
 
 case "$choice" in
-	"1") apt-get install python-pip
+	"1") apt-get install python2.7 
+	     apt-get install python-pip
 	;;
-	"2") dnf install python-pip
+	"2") yum install epel-release
+	     yum install python2.7	
+	     yum install python-pip
 	;;
-	"3") continue
+	"3") pacman -S python2.7
+	     pacman -S python-pip
 	;;
+	*) 
+	   printf "Wrong Option!\n"
+	   exit 1
 esac
 
+printf "Installing Scapy..."
+pip install scapy
+printf "Finished."
