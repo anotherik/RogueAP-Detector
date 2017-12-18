@@ -1,4 +1,4 @@
-import os
+import os, subprocess
 import modules.colors as colors
 import modules.actuators.active_detectors as active_detectors
 import modules.logs.logs_api as logs_api
@@ -9,16 +9,33 @@ def associateToAp(ap_name,bssid,pwd,iface):
 	
 	if(pwd==''):
 		print(colors.get_color("ORANGE")+"Trying to associate to [%s | %s]" % (ap_name,bssid) +colors.get_color("ENDC"))
-		os.system("nmcli dev wifi connect "+ap_name+" bssid "+bssid+" ifname "+iface)
-
-		call_active_methods(iface, ap_name, bssid)
+		
+		try:
+			#os.system("nmcli dev wifi connect "+ap_name+" bssid "+bssid+" ifname "+iface)
+			assoc_result = subprocess.check_output("nmcli dev wifi connect "+ap_name+" bssid "+bssid+" ifname "+iface, shell=True)
+			if ("Error:" not in str(assoc_result) ):
+				call_active_methods(iface, ap_name, bssid)
+			else:
+				print ("Associated!")
+				return
+		except Exception as e:
+				print("Exception: %s" %e)
+				return
 
 	else:
 		print(colors.get_color("ORANGE")+"Trying to associate to [%s | %s]" % (ap_name,bssid) +colors.get_color("ENDC"))
-		os.system("nmcli dev wifi connect "+str(ap_name)+" password "+str(pwd)+" bssid "+str(bssid).upper()+" ifname "+str(iface))
-		
-		call_active_methods(iface, ap_name, bssid)
-
+		try:
+			#os.system("nmcli dev wifi connect "+str(ap_name)+" password "+str(pwd)+" bssid "+str(bssid).upper()+" ifname "+str(iface))
+			assoc_result = subprocess.check_output("nmcli dev wifi connect "+str(ap_name)+" password "+str(pwd)+" bssid "+str(bssid).upper()+" ifname "+str(iface), shell=True)
+			if ("Error:" not in str(assoc_result)):
+				print ("Associated!")
+				call_active_methods(iface, ap_name, bssid)
+			else:
+				print ("Not associated!")
+				return
+		except Exception as e:
+				print("Exception: %s" %e)
+				return	
 
 def call_active_methods(iface, ap_name, bssid):
 		
@@ -32,7 +49,7 @@ def call_active_methods(iface, ap_name, bssid):
 		print ("ISP: %s" % isp)
 
 		#active_detectors.traceroute(hostname_internal, iface) # test internal address
-		hostname_external = "sapo.pt"
+		hostname_external = "8.8.8.8"
 
 		print(colors.get_color("ORANGE")+"Calculating the traceroute..."+colors.get_color("ENDC"))
 		traceroute_val = active_detectors.traceroute(hostname_external, iface)
