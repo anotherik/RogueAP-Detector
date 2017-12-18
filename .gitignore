@@ -15,6 +15,8 @@ modules/actuators/active_detectors.pyc
 modules/actuators/associate_model.pyc
 modules/colors.pyc
 modules/manage_interfaces.pyc
+modules/actuators/deauthing.pyc
+modules/actuators/createRogueAP.pyc
 data/__init__.pyc
 data/manipulate_db.pyc
 idea
@@ -31,3 +33,7 @@ dump_3_enx_PineAP.txt
 nmcli_commands.txt
 findWhoIsIP.py
 09-24-2017_19:28:12
+authWatch.py
+home_profile.txt
+poc_dcc.txt
+poc_profile.txt
