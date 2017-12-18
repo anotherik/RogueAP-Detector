@@ -20,16 +20,26 @@ Options:
 	-s scan_type            -> name of scanning type (iwlist, scapy)  
 	-h hive_mode		-> creates an AP  
 	-d deauth               -> deauthenticates users from target AP  
+	-deauth_detect          -> detects deauthentication attacks  
 	-a active_mode		-> activates random probe requests  
 
 Examples:  
 	
+	# Scan for RAPs using a profile - iwlist  
 	./rogue_detector.py -i iface -s iwlist -p example_profile.txt  
+	# Scan for RAP without profile  
 	./rogue_detector.py -i iface -s iwlist  
+	# Scan for RAPs using a profile - scapy  
 	./rogue_detector.py -i iface -s scapy -p example_profile.txt  
+	# Scan for RAPs using a profile and using active mode - iwlist  
 	./rogue_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  
 
-	./rogue_detector.py -im iface -h   
+	# Create a RAPs  
+	./rogue_detector.py -im iface -h  
+	# Deauthenticate mode  
+	./rogue_detector.py -im iface -d  
+	# Deauthentication attacks detection  
+	./rogue_detector.py -im iface -deauth_detect
 
 ## Dependencies
 python2.7  
