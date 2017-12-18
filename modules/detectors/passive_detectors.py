@@ -11,10 +11,21 @@ from scapy.all import *
 import modules.colors as colors
 import modules.manage_interfaces as manage_interfaces
 import modules.actuators.associate_model as associate
+import modules.logs.logs_api as logs_api
 import Queue, multiprocessing
 from itertools import imap
 from random import randint
 import signal
+
+def signal_handler(signal, frame):
+	try:
+		manage_interfaces.disable_monitor(interface_monitor)
+	except Exception, err:
+		logs_api.errors_log(str(err))
+		pass
+
+	print (colors.get_color("GRAY") + "\nExiting...\nGoodbye!"+colors.get_color("ENDC"))
+	sys.exit(0)
 
 TIMEOUT = 5 # wait 5 second before skipping association process
 
@@ -288,8 +299,32 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 					print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
 
 
-def check_tsf():
-	print ("soon...")
+def getTimeDate():
+	return time.strftime("%X") +" "+ time.strftime("%x")
+
+# to be completed
+def sniffRequests(p):
+	if (p.haslayer(Dot11Deauth)):
+		# Look for a deauth packet and print the AP BSSID, Client BSSID and the reason for the deauth.
+		print (p.sprintf(colors.get_color("OKBLUE")+"[%s] " %getTimeDate()+"Deauth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%], Reason [%Dot11Deauth.reason%]"+ colors.get_color("ENDC")))
+		signal.signal(signal.SIGINT, signal_handler)
+		
+		
+
+def deauth_detector(interface):
+	global interface_monitor
+	interface_monitor = interface
+	print (colors.get_color("GRAY")+"Looking for Deauths..."+colors.get_color("ENDC"))
+	sniff(iface=interface,prn=sniffRequests)
+
+def check_tsf(scanned_ap):
+	##print ("You have: "+scanned_ap['tsf'])
+	simple_poc_threshold_down = "0:01:00.10"
+	simple_poc_threshold_up = "500 days, 0:00:00.00"
+	if (scanned_ap['tsf'] <= simple_poc_threshold_down):
+		print(colors.get_color("FAIL")+"[%s | %s] Recently Created AP..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+	#elif (scanned_ap['tsf'] > simple_poc_threshold_up):
+	#	print(colors.get_color("FAIL")+"[%s | %s] Ups..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
 
 	# scapy tsf 0000 days
 	# airbase tsf 17436 days

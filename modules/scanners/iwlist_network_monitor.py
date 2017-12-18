@@ -38,17 +38,23 @@ def signal_handler(signal, frame):
 		logs_api.errors_log(str(err))
 		pass
 
-	print colors.GRAY + "\nExiting...\nGoodbye!" + colors.ENDC
+	print (colors.GRAY + "\nExiting...\nGoodbye!"+colors.ENDC)
 	sys.exit(0)
 
 def scan(*arg):
+	##print ("Scanning "+str(len(arg)))
 	active_probing, profile = False, False
 	interface = arg[0]
-	if(len(arg)>1):
+	if(len(arg)==2):
 		profile = arg[1]
-	if(len(arg)>2):
+	elif(len(arg)==3):
+		active_probing = arg[1]
+		#global interface_monitor
+		interface_monitor = arg[2]
+	elif(len(arg)==4):
+		profile = arg[1]
 		active_probing = arg[2]
-		global interface_monitor
+		#global interface_monitor
 		interface_monitor = arg[3]
 
 	global table_of_manufacturers
@@ -100,12 +106,18 @@ def scan(*arg):
 					
 					passive_detectors.free_WiFis_detect(line, captured_aps)
 					passive_detectors.spot_karma(line)
+					#passive_detectors.deauth_detector(interface_monitor) # new stufx
 					
 					if (active_probing):
 						passive_detectors.spoting_PineAP(line, active_probing, interface_monitor)
 					else:
 						passive_detectors.spoting_PineAP(line)
+
+					#if (deauth_detect):
+						#passive_detectors.deauth_detector(interface_monitor) # new stufx
 					# end of detections heuristics	
+
+					passive_detectors.check_tsf(line)
 
 					captured_aps.append(line)
 					#print captured_aps

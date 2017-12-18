@@ -8,6 +8,8 @@ import os, string, threading, sys, signal, time, Queue, multiprocessing
 import modules.scanners.iwlist_network_monitor as iwlist_monitor
 import modules.scanners.scapy_network_monitor as scapy_monitor
 import modules.actuators.createRogueAP as hive_mode
+import modules.actuators.deauthing as deauthing
+import modules.detectors.passive_detectors as passive_detectors
 import modules.manage_interfaces as manage_interfaces
 import modules.colors as colors
 
@@ -39,6 +41,7 @@ def usage():
 	print("\t  -s scan_type\t\t -> name of scanning type (iwlist, scapy)")
 	print("\t  -h hive_mode\t\t -> creates an AP")
 	print("\t  -d deauth\t\t -> deauthenticates users from target AP")
+	print("\t  -deauth_detect\t -> detects deauthentication attacks")
 	print("\t  -a active_mode\t -> activates random probe requests")
 
 	print(colors.get_color("BOLD")+"\nExample:  ./rogue_detector.py -i iface -s iwlist -p example_profile.txt"+colors.get_color("ENDC"))
@@ -47,7 +50,7 @@ def parse_args():
 	intro()
 	scanners = ["scapy", "iwlist"]
 	scanner_type = ""
-	profile, scan, hive, deauth, active_probing = False, False, False, False, False
+	profile, scan, hive, deauth, active_probing, deauth_detect = False, False, False, False, False, False
 
 	if (len(sys.argv) < 4):
 		usage()
@@ -85,6 +88,9 @@ def parse_args():
 		if (cmd == "-a"):
 			active_probing = True	
 
+		if (cmd == "-deauth_detect"):
+			deauth_detect = True
+
 			
 	if (scan):		
 		if (scanner_type == "scapy"):
@@ -105,6 +111,10 @@ def parse_args():
 					manage_interfaces.change_mac(interface_monitor)
 					manage_interfaces.enable_monitor(interface_monitor)
 					iwlist_monitor.scan(interface, profile_name, active_probing, interface_monitor)
+				elif (active_probing):
+					manage_interfaces.change_mac(interface_monitor)
+					manage_interfaces.enable_monitor(interface_monitor)
+					iwlist_monitor.scan(interface, active_probing, interface_monitor)
 				elif (profile):
 					iwlist_monitor.scan(interface, profile_name)
 				else:
@@ -130,6 +140,28 @@ def parse_args():
 			return
 			# config a file to load the AP parameters
 			# os.system("./createRogueAP.sh") # read params from config file
+
+	if (deauth):
+		iface_deauth = interface_monitor
+		try:	
+			manage_interfaces.enable_monitor(iface_deauth)
+			p = multiprocessing.Process(deauthing.deauthenticate(iface_deauth))
+			p.start()
+			p.join()
+		except Exception as e:
+			print("Exception: %s" % e)
+			return		
+
+	if (deauth_detect):
+		iface_deauth = interface_monitor
+		try:	
+			manage_interfaces.enable_monitor(iface_deauth)
+			p = multiprocessing.Process(passive_detectors.deauth_detector(interface_monitor))
+			p.start()
+			p.join()
+		except Exception as e:
+			print("Exception: %s" % e)
+			return	
 
 
 def main():
