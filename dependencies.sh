@@ -6,10 +6,12 @@ read choice
 case "$choice" in
 	"1") apt-get install python2.7 
 	     apt-get install python-pip
+	     apt-get install wireless-tools
 	;;
 	"2") yum install epel-release
 	     yum install python2.7	
 	     yum install python-pip
+	     apt-get install wireless-tools
 	;;
 	"3") pacman -S python2.7
 	     pacman -S python-pip
