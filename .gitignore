@@ -17,5 +17,5 @@ authWatch.py
 home_profile.txt
 poc_dcc.txt
 poc_profile.txt
-*.pyc
+**/*.pyc
 *.log
