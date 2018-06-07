@@ -18,3 +18,4 @@ home_profile.txt
 poc_dcc.txt
 poc_profile.txt
 *.pyc
+*.log
