@@ -13,10 +13,14 @@ captured_aps = []
 manufacturer_table = "manufacturer/manufacturer_table.txt"
 table_of_manufacturers = {}
 
+
 global interface_monitor
 
 def getTimeDate():
 	return time.strftime("%X") +" "+ time.strftime("%x")#time.strftime("%c")
+
+def getTimeDate2():
+        return time.strftime("%x").replace("/", "")+"_"+time.strftime("%X")
 
 class colors:
         HEADER = '\033[95m'
@@ -30,6 +34,21 @@ class colors:
         BOLD = '\033[1m'
         GRAY = '\033[90m'
         UNDERLINE = '\033[4m'
+
+log_name = "run_"+getTimeDate2()+".log" 
+log_file = open(log_name,'a')
+
+class Unbuffered:
+
+   def __init__(self, stream):
+
+       self.stream = stream
+
+   def write(self, data):
+
+       self.stream.write(data)
+       self.stream.flush()
+       log_file.write(data)    # Write the data of stdout here to a text file as well
 
 def signal_handler(signal, frame):
 	try:
@@ -59,6 +78,12 @@ def scan(*arg):
 
 	global table_of_manufacturers
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
+
+        # record stdout
+        #old_stdout = sys.stdout
+        #log_file = open("run-1.log","a")
+        #sys.stdout = log_file
+        sys.stdout=Unbuffered(sys.stdout)
 
 	table = ['Date','AP Name','BSSID', 'CH', 'Brand','Signal','Quality','Encryption','Cipher', 'Pairwise','Authentication','TSF']
 	print colors.WARNING + '{:^25s}|{:^22s}|{:^19s}|{:^9s}|{:^15s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9],table[10],table[11]) + colors.ENDC
@@ -121,6 +146,10 @@ def scan(*arg):
 
 					captured_aps.append(line)
 					#print captured_aps
+
+                                        #sys.stdout = old_stdout
+                                        #log_file.close()
+
 			signal.signal(signal.SIGINT, signal_handler)
 			time.sleep(1)
 		except Exception, err:
@@ -284,3 +313,4 @@ def parse(list):
 			pass
 
     return parsed_list
+
