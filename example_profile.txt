@@ -1,2 +1,0 @@
-# format of configuration profile: SSID ENC RSSI NR_BSSIDs BSSIDs
-YOUR_ESSID WPA2 35 3 11:12:13:14:15:16 11:12:13:14:15:17 11:12:13:14:15:18
