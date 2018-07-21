@@ -26,26 +26,26 @@ Options:
 Examples:  
 
 <pre>
-	<b> Scan for RAPs without a profile - (iwlist mode)</b>  
-	./rogueAP_detector.py -i iface -s iwlist  
+<b> Scan for RAPs without a profile - (iwlist mode)</b>  
+./rogueAP_detector.py -i iface -s iwlist  
 
-	<b> Scan for RAPs using a profile - (iwlist mode)</b>  
-	./rogueAP_detector.py -i iface -s iwlist -p example_profile.txt  
+<b> Scan for RAPs using a profile - (iwlist mode)</b>  
+./rogueAP_detector.py -i iface -s iwlist -p example_profile.txt  
 
-	<b> Scan for RAPs using a profile - (scapy mode)</b>  
-	./rogueAP_detector.py -i iface -s scapy -p example_profile.txt  
+<b> Scan for RAPs using a profile - (scapy mode)</b>  
+./rogueAP_detector.py -i iface -s scapy -p example_profile.txt  
 
-	<b> Scan for RAPs using a profile and karma detect active mode enabled - (iwlist mode)</b>  
-	./rogueAP_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  
+<b> Scan for RAPs using a profile and karma detect active mode enabled - (iwlist mode)</b>  
+./rogueAP_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  
 
-	<b> Create a RAP</b>  
-	./rogueAP_detector.py -im iface -h  
+<b> Create a RAP</b>  
+./rogueAP_detector.py -im iface -h  
 
-	<b> Deauthenticate defensive mechanism mode</b>  
-	./rogueAP_detector.py -im iface -d  
+<b> Deauthenticate defensive mechanism mode</b>  
+./rogueAP_detector.py -im iface -d  
 
-	<b> Deauthentication attacks detection</b>  
-	./rogueAP_detector.py -im iface -deauth_detect
+<b> Deauthentication attacks detection</b>  
+./rogueAP_detector.py -im iface -deauth_detect  
 </pre>
 
 ![RogueAP Detector](screenshot.png)
