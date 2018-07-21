@@ -43,6 +43,8 @@ Examples:
 
 ## Dependencies
 python2.7  
-scapy   
+scapy  
+wireless-tools  
+iw  
 
 To install the dependencies, run: **./dependencies.sh**  
