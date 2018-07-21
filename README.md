@@ -4,9 +4,9 @@ _rogueAP Detector_ is an open source tool to detect Wi-Fi Rogue Access Points, c
 
 ## Modules
 
-	Scanners: Methods to scan the network  
-	Detectors: Set of passive detectors to identify RogueAP types  
-	Actuators: Set of active detectors to identify RogueAP types  
+	**Scanners**: Methods to scan the network  
+	**Detectors**: Set of passive detectors to identify RogueAP types  
+	**Actuators**: Set of active detectors to identify RogueAP types  
 	
 ## Usage
 ./rogueAP_detector.py <options>  
@@ -24,23 +24,28 @@ Options:
 
 Examples:  
 
-	# Scan for RAPs without a profile - (iwlist mode)  
+	** Scan for RAPs without a profile - (iwlist mode)**  
 	./rogueAP_detector.py -i iface -s iwlist  
-	# Scan for RAPs using a profile - (iwlist mode)  
+
+	** Scan for RAPs using a profile - (iwlist mode)**  
 	./rogueAP_detector.py -i iface -s iwlist -p example_profile.txt  
-	# Scan for RAPs using a profile - (scapy mode)  
+
+	** Scan for RAPs using a profile - (scapy mode)**  
 	./rogueAP_detector.py -i iface -s scapy -p example_profile.txt  
-	# Scan for RAPs using a profile and karma detect active mode enabled - (iwlist mode)  
+
+	** Scan for RAPs using a profile and karma detect active mode enabled - (iwlist mode)**  
 	./rogueAP_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  
 
-	# Create a RAP  
+	** Create a RAP**  
 	./rogueAP_detector.py -im iface -h  
-	# Deauthenticate defensive mechanism mode  
+
+	** Deauthenticate defensive mechanism mode**  
 	./rogueAP_detector.py -im iface -d  
-	# Deauthentication attacks detection  
+
+	** Deauthentication attacks detection**  
 	./rogueAP_detector.py -im iface -deauth_detect
 
-![RogueAP Detector][screenshot]
+![RogueAP Detector](screenshot.png)
 
 ## Dependencies
 python2.7  
