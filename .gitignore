@@ -1,4 +1,3 @@
 *.pyc
 **.pyc
 **/*.pyc
-*.log
