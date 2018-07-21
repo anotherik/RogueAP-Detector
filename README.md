@@ -24,17 +24,17 @@ Options:
 	-a active_mode		-> activates random probe requests  
 
 Examples:  
-	
-	# Scan for RAPs using a profile - iwlist  
-	./rogue_detector.py -i iface -s iwlist -p example_profile.txt  
-	# Scan for RAP without profile  
+
+	# Scan for RAP without a profile - using iwlist
 	./rogue_detector.py -i iface -s iwlist  
-	# Scan for RAPs using a profile - scapy  
+	# Scan for RAPs using a profile - using iwlist  
+	./rogue_detector.py -i iface -s iwlist -p example_profile.txt  
+	# Scan for RAPs using a profile - using scapy  
 	./rogue_detector.py -i iface -s scapy -p example_profile.txt  
 	# Scan for RAPs using a profile and using active mode - iwlist  
 	./rogue_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  
 
-	# Create a RAPs  
+	# Create a RAP  
 	./rogue_detector.py -im iface -h  
 	# Deauthenticate mode  
 	./rogue_detector.py -im iface -d  

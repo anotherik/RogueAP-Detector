@@ -4,7 +4,7 @@ import modules.manage_interfaces as manage_interfaces
 
 def getRogueApParams():
 	# rogueAP_configs (essid, bssid, ch, enc)
-	with open('rogueAP_configs.txt') as fp:
+	with open('profiles/rogueAP.txt') as fp:
 	    for line in fp:
 	        print line.strip()
 	        params = line.split()

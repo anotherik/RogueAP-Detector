@@ -219,7 +219,7 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 	
 	##print("Detecting Rogue Free Wifis ...")
 
-	with open('free_wifis.txt','r') as f:
+	with open('profiles/free_wifis.txt','r') as f:
 		next(f)
 		for line in f:
 			auth_ssid = line.split()[0]

@@ -35,7 +35,7 @@ class colors:
         GRAY = '\033[90m'
         UNDERLINE = '\033[4m'
 
-log_name = "run_"+getTimeDate2()+".log" 
+log_name = "logs/run_"+getTimeDate2()+".log" 
 log_file = open(log_name,'a')
 
 class Unbuffered:
@@ -78,13 +78,8 @@ def scan(*arg):
 
 	global table_of_manufacturers
 	table_of_manufacturers = manufacturer.MacParser(manufacturer_table).refresh()
-
-        # record stdout
-        #old_stdout = sys.stdout
-        #log_file = open("run-1.log","a")
-        #sys.stdout = log_file
-        sys.stdout=Unbuffered(sys.stdout)
-
+	sys.stdout=Unbuffered(sys.stdout)
+	
 	table = ['Date','AP Name','BSSID', 'CH', 'Brand','Signal','Quality','Encryption','Cipher', 'Pairwise','Authentication','TSF']
 	print colors.WARNING + '{:^25s}|{:^22s}|{:^19s}|{:^9s}|{:^15s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9],table[10],table[11]) + colors.ENDC
 	while True:
