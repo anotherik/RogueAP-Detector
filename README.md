@@ -3,11 +3,12 @@
 _rogueAP Detector_ is an open source tool to detect Wi-Fi Rogue Access Points, covering the most commonly known attacks.  This tool is a modular framework composed of Scanners, Detectors and Actuators, which are responsible for scanning for available APs, apply a set of heuristics to detect them, and apply a defensive mechanism.  
 
 ## Modules
+<pre>
+	<b>Scanners</b>: Methods to scan the network  
+	<b>Detectors</b>: Set of passive detectors to identify RogueAP types  
+	<b>Actuators</b>: Set of active detectors to identify RogueAP types  
+</pre>
 
-	**Scanners**: Methods to scan the network  
-	**Detectors**: Set of passive detectors to identify RogueAP types  
-	**Actuators**: Set of active detectors to identify RogueAP types  
-	
 ## Usage
 ./rogueAP_detector.py <options>  
 
@@ -24,9 +25,10 @@ Options:
 
 Examples:  
 
-	** Scan for RAPs without a profile - (iwlist mode)**  
+<pre>
+	<b> Scan for RAPs without a profile - (iwlist mode)</b>  
 	./rogueAP_detector.py -i iface -s iwlist  
-
+</pre>
 	** Scan for RAPs using a profile - (iwlist mode)**  
 	./rogueAP_detector.py -i iface -s iwlist -p example_profile.txt  
 
