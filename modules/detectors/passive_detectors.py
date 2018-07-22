@@ -250,7 +250,7 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 						##print("inside 3 +++++++++++++++++++++++")	
 
 						# NOS_WIFI
-						if( "NOS-" in captured_ap['essid'] or "ZON-" in captured_ap['essid']):
+						if(scanned_ap['essid'] == "NOS_WIFI_Fon" and ("NOS-" in captured_ap['essid'] or "ZON-" in captured_ap['essid'])):
 
 							last_byte = captured_ap['mac'][15:]
 							val = int(last_byte, base=16)
@@ -261,10 +261,14 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 							##print("Produced correct BSSID: %s and CH: %s" % (correct_bssid, captured_ap['channel']))
 							##print("Scanned AP BSSID: %s and CH: %s" % (scanned_ap['mac'], scanned_ap['channel']))
 							if (scanned_ap['mac'] == correct_bssid.upper() and scanned_ap['channel'] == captured_ap['channel']): 
-								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Auth Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Valid Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+								break
+							else: # not in auth vendors
+								print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+								break
 						
 						# MEO-WiFi
-						elif("MEO-" in captured_ap['essid']):
+						elif(scanned_ap['essid'] == "MEO-WiFi" and "MEO-" in captured_ap['essid']):
 
 							first_byte = captured_ap['mac'][:-15]
 							last_byte = captured_ap['mac'][15:]
@@ -279,24 +283,50 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 							##print("Produced correct BSSID: %s and CH: %s" % (correct_bssid, captured_ap['channel']))
 							##print("Scanned AP BSSID: %s and CH: %s" % (scanned_ap['mac'], scanned_ap['channel']))
 							if (scanned_ap['mac'] == correct_bssid.upper() and scanned_ap['channel'] == captured_ap['channel']): 
-								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Auth Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))		
+								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Valid Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+								break
+							else: # not in auth vendors
+								print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+								break
 
-						# Euronext_Guest
-						elif("Euronext_Corp" in captured_ap['essid']):
+						# wifi_eventos
+						elif(scanned_ap['essid'] == "wifi_eventos" and "eduroam" in captured_ap['essid']):
 
 							last_byte = captured_ap['mac'][15:]
 							val = int(last_byte, base=16)
-							val_inc = hex(val - 1)[2:]
+							val_inc = hex(val + 1)[2:]
 							correct_bssid = captured_ap['mac'][:-2] + val_inc
 							
 							## DEBUG
 							##print("Produced correct BSSID: %s and CH: %s" % (correct_bssid, captured_ap['channel']))
 							##print("Scanned AP BSSID: %s and CH: %s" % (scanned_ap['mac'], scanned_ap['channel']))
 							if (scanned_ap['mac'] == correct_bssid.upper() and scanned_ap['channel'] == captured_ap['channel']): 
-								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Auth Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Valid Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+								break
+							else: # not in auth vendors
+								print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+								break
+
+						# UPorto
+						elif(scanned_ap['essid'] == "UPorto" and "eduroam" in captured_ap['essid']):
+
+							last_byte = captured_ap['mac'][15:]
+							val = int(last_byte, base=16)
+							val_inc = hex(val + 2)[2:]
+							correct_bssid = captured_ap['mac'][:-2] + val_inc
+							
+							## DEBUG
+							##print("Produced correct BSSID: %s and CH: %s" % (correct_bssid, captured_ap['channel']))
+							##print("Scanned AP BSSID: %s and CH: %s" % (scanned_ap['mac'], scanned_ap['channel']))
+							if (scanned_ap['mac'] == correct_bssid.upper() and scanned_ap['channel'] == captured_ap['channel']): 
+								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Valid Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
+								break
+							else: # not in auth vendors
+								print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+								break
 
 				else: # not in auth vendors
-					print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+					print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
 
 
 def getTimeDate():
@@ -320,11 +350,12 @@ def deauth_detector(interface):
 def check_tsf(scanned_ap):
 	##print ("You have: "+scanned_ap['tsf'])
 	simple_poc_threshold_down = "0:01:00.10"
-	simple_poc_threshold_up = "500 days, 0:00:00.00"
+	simple_poc_threshold_up = "800"
+
 	if (scanned_ap['tsf'] <= simple_poc_threshold_down):
-		print(colors.get_color("FAIL")+"[%s | %s] Recently Created AP..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-	#elif (scanned_ap['tsf'] > simple_poc_threshold_up):
-	#	print(colors.get_color("FAIL")+"[%s | %s] Ups..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+		print(colors.get_color("ORANGE")+"[%s | %s] Recently Created AP..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+	elif (int(scanned_ap['tsf'].split()[0]) > int(simple_poc_threshold_up)):
+		print(colors.get_color("ORANGE")+"[%s | %s] Strange uptime..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
 
 	# scapy tsf 0000 days
 	# airbase tsf 17436 days

@@ -10,7 +10,7 @@ def suspicious_behaviours(scanned_ap, captured_aps):
 			
 			# captured AP with same essid and dif bssid and encryption
 			if (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] != ap['mac'] and scanned_ap['key type'] != ap['key type']):
-				return "suspicious_3"
+				return "suspicious_1"
 
 			# captured AP with same bssid and dif essid and encryption (karma)
 			elif (scanned_ap['mac'] == ap['mac'] and scanned_ap['essid'] != ap['essid'] and scanned_ap['key type'] != ap['key type']):
@@ -23,10 +23,6 @@ def suspicious_behaviours(scanned_ap, captured_aps):
 			# captured AP with same essid, bssid, channel and dif encryption
 			elif (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] == ap['mac'] and scanned_ap['channel'] == ap['channel'] and scanned_ap['key type'] != ap['key type']):
 				return "suspicious_4"
-
-			# captured AP with same essid, bssid, channel and encryption
-			elif (scanned_ap['essid'] == ap['essid'] and scanned_ap['mac'] == ap['mac'] and scanned_ap['channel'] == ap['channel'] and scanned_ap['key type'] == ap['key type']):
-				return "suspicious_3"
 
 		except Exception as e:
 			print("Exception: %s" % e)
