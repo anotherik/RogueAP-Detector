@@ -263,9 +263,9 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 							if (scanned_ap['mac'] == correct_bssid.upper() and scanned_ap['channel'] == captured_ap['channel']): 
 								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Valid Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
 								break
-							else: # not in auth vendors
-								print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-								break
+							#else: # not in auth vendors
+							#	print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+							#	break
 						
 						# MEO-WiFi
 						elif(scanned_ap['essid'] == "MEO-WiFi" and "MEO-" in captured_ap['essid']):
@@ -285,9 +285,9 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 							if (scanned_ap['mac'] == correct_bssid.upper() and scanned_ap['channel'] == captured_ap['channel']): 
 								print (colors.get_color("OKGREEN")+"[%s | %s] Probable Valid Free WiFi." % (scanned_ap['essid'], scanned_ap['mac']) + colors.get_color("ENDC"))
 								break
-							else: # not in auth vendors
-								print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-								break
+							#else: # not in auth vendors
+							#	print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+							#	break
 
 						# wifi_eventos
 						elif(scanned_ap['essid'] == "wifi_eventos" and "eduroam" in captured_ap['essid']):
@@ -350,13 +350,17 @@ def deauth_detector(interface):
 def check_tsf(scanned_ap):
 	##print ("You have: "+scanned_ap['tsf'])
 	simple_poc_threshold_down = "0:01:00.10"
-	simple_poc_threshold_up = "800"
-
-	if (scanned_ap['tsf'] <= simple_poc_threshold_down):
+	simple_poc_threshold_up = 800
+	
+	scanned_tsf = scanned_ap['tsf'].split()[0]
+	
+	if ( scanned_tsf < simple_poc_threshold_down ):
 		print(colors.get_color("ORANGE")+"[%s | %s] Recently Created AP..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-	elif (int(scanned_ap['tsf'].split()[0]) > int(simple_poc_threshold_up)):
-		print(colors.get_color("ORANGE")+"[%s | %s] Strange uptime..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-
+	
+	if ( len(scanned_ap['tsf'].split()) > 1 ):
+		if ( int(scanned_tsf) > simple_poc_threshold_up ):
+			print(colors.get_color("ORANGE")+"[%s | %s] Strange uptime..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
+		
 	# scapy tsf 0000 days
 	# airbase tsf 17436 days
 	# RAPs will have lower tsf
