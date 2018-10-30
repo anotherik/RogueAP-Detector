@@ -6,6 +6,7 @@ import modules.detectors.noknowled_detector as noknowled_detector
 import modules.logs.logs_api as logs_api
 import modules.detectors.passive_detectors as passive_detectors
 import modules.manage_interfaces as manage_interfaces
+import modules.colors as colors
 import Queue, multiprocessing
 from datetime import timedelta
 
@@ -21,19 +22,6 @@ def getTimeDate():
 
 def getTimeDate2():
         return time.strftime("%x").replace("/", "")+"_"+time.strftime("%X")
-
-class colors:
-        HEADER = '\033[95m'
-        OKBLUE = '\033[94m'
-        OKGREEN = '\033[92m'
-        WHITE = '\033[37m'
-        WARNING = '\033[93m'
-        FAIL = '\033[91m'
-        FAIL2 = '\033[41m'
-        ENDC = '\033[0m'
-        BOLD = '\033[1m'
-        GRAY = '\033[90m'
-        UNDERLINE = '\033[4m'
 
 log_name = "logs/run_"+getTimeDate2()+".log" 
 log_file = open(log_name,'a')
@@ -57,7 +45,7 @@ def signal_handler(signal, frame):
 		logs_api.errors_log(str(err))
 		pass
 
-	print (colors.GRAY + "\nExiting...\nGoodbye!"+colors.ENDC)
+	print (colors.get_color("GRAY") + "\nExiting...\nGoodbye!"+colors.get_color("ENDC"))
 	sys.exit(0)
 
 def scan(*arg):
@@ -81,7 +69,7 @@ def scan(*arg):
 	sys.stdout=Unbuffered(sys.stdout)
 	
 	table = ['Date','AP Name','BSSID', 'CH', 'Brand','Signal','Quality','Encryption','Cipher', 'Pairwise','Authentication','TSF']
-	print colors.WARNING + '{:^25s}|{:^22s}|{:^19s}|{:^9s}|{:^15s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9],table[10],table[11]) + colors.ENDC
+	print (colors.get_color("BOLD") + '{:^25s}|{:^22s}|{:^19s}|{:^9s}|{:^15s}|{:^8s}|{:^9s}|{:^16s}|{:^8s}|{:^11s}|{:^16s}|{:^16s}'.format(table[0],table[1],table[2],table[3],table[4],table[5],table[6],table[7],table[8],table[9],table[10],table[11]) + colors.get_color("ENDC"))
 	while True:
 		ap_list = get_results(interface)
 		#print ap_list
@@ -89,7 +77,7 @@ def scan(*arg):
 			for line in ap_list:
 				#print line
 				# filter to check if APs already exists 
-				if filter_aps(line):	     
+				if filter_aps(line, profile):
 					limited = False
 					if len(line['essid'])>21:
 						limited = True
@@ -103,20 +91,20 @@ def scan(*arg):
 
 					if limited:
 						if (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
-							print (colors.WHITE + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.ENDC)
+							print (colors.get_color("FAIL") + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
-							print (colors.FAIL2 + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.ENDC)
+							print (colors.get_color("FAIL1") + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
-							print (colors.FAIL + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.ENDC)
+							print (colors.get_color("FAIL2") + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						else:
 							print '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s}'.format(getTimeDate(),line['essid'][0:21],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf'])
 					else:
 						if (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
-							print (colors.WHITE + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.ENDC)
+							print (colors.get_color("FAIL") + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
-							print (colors.FAIL2 + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.ENDC)
+							print (colors.get_color("FAIL1") + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
-							print (colors.FAIL + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.ENDC)
+							print (colors.get_color("FAIL2") + '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						else:
 							print '{:^25s} {:<21s}  {:^19s} {:^9s} {:^15s} {:^8s} {:^9s} {:^16s} {:^8s}  {:^10s} {:^16s} {:^16s}'.format(getTimeDate(),line['essid'],line['mac'],line['channel'], line['manufacturer'],line['signal'],line['quality'],line['key type'],line['group cipher'],line['pairwise cipher'], line['authentication suites'], line['tsf'])
 		
@@ -165,8 +153,22 @@ def get_results(interface):
 
     return parse(list_of_results)
 
-def filter_aps(access_point):
-    for ap in captured_aps:
+def filter_aps(*arg):
+	access_point = arg[0]
+	profile = arg[1]
+	# if profile mode is enabled filter results just for that essid
+	filtered_ssid = ""
+	if (profile):
+		with open(profile,'r') as f:
+			next(f) #skipping first line
+			for line in f:
+				filtered_ssid = line.split()[0]
+				break
+
+		if access_point['essid'] != filtered_ssid:
+			return False
+
+	for ap in captured_aps:
 		try:
 			#print "a= " + str(float(ap['quality_calc']))
 			#print "b= " + str(float(access_point['quality_calc']))
@@ -179,8 +181,8 @@ def filter_aps(access_point):
 				return False
 		except Exception as e: 
 			logs_api.errors_log("Exception found: "+str(e))
-			pass		
-    return True
+			pass
+	return True
 
 def parse(list):
     parsed_list = []

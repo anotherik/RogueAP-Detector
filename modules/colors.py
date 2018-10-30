@@ -12,8 +12,6 @@ def get_color(color):
         return '\033[37m'
     if color == 'WARNING': 
         return '\033[93m'
-    if color == 'FAIL': 
-        return '\033[91m'
     if color == 'ORANGE': 
         return '\033[33m'
     if color == 'ENDC':
@@ -26,6 +24,8 @@ def get_color(color):
         return '\033[4m'
     if color == 'FAIL':
         return '\033[91m'
+    if color == 'FAIL1':
+        return '\033[101m'
     if color == 'FAIL2':
         return '\033[41m'
     else:

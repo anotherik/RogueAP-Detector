@@ -334,18 +334,18 @@ def getTimeDate():
 
 # to be completed
 def sniffRequests(p):
+	signal.signal(signal.SIGINT, signal_handler)
+	if (p.haslayer(Dot11Auth)):
+		print (p.sprintf(colors.get_color("OKGREEN")+"[%s] " %getTimeDate()+"Auth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%]"+ colors.get_color("ENDC")))
 	if (p.haslayer(Dot11Deauth)):
 		# Look for a deauth packet and print the AP BSSID, Client BSSID and the reason for the deauth.
 		print (p.sprintf(colors.get_color("OKBLUE")+"[%s] " %getTimeDate()+"Deauth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%], Reason [%Dot11Deauth.reason%]"+ colors.get_color("ENDC")))
-		signal.signal(signal.SIGINT, signal_handler)
-		
-		
 
 def deauth_detector(interface):
 	global interface_monitor
 	interface_monitor = interface
 	print (colors.get_color("GRAY")+"Looking for Deauths..."+colors.get_color("ENDC"))
-	sniff(iface=interface,prn=sniffRequests)
+	sniff(iface=interface,prn=sniffRequests,store=0)
 
 def check_tsf(scanned_ap):
 	##print ("You have: "+scanned_ap['tsf'])
