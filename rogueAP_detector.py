@@ -95,7 +95,6 @@ def parse_args():
 			
 	if (scan):		
 		if (scanner_type == "scapy"):
-			manage_interfaces.change_mac(interface)
 			manage_interfaces.enable_monitor(interface)
 			try:
 				if (profile):
