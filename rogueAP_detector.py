@@ -92,7 +92,6 @@ def parse_args():
 		if (cmd == "-deauth_detect"):
 			deauth_detect = True
 
-			
 	if (scan):		
 		if (scanner_type == "scapy"):
 			manage_interfaces.enable_monitor(interface)
@@ -138,8 +137,6 @@ def parse_args():
 		except Exception as e:
 			print("Exception: %s" % e)
 			return
-			# config a file to load the AP parameters
-			# os.system("./createRogueAP.sh") # read params from config file
 
 	if (deauth):
 		iface_deauth = interface_monitor
