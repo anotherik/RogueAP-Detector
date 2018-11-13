@@ -118,8 +118,8 @@ def authorized_aps(scanned_ap, profile):
 
 phishing_karma = {}
 def spot_karma(scanned_ap):
+	##DEBUG
 	#print("Looking fot karmas...")
-	
 	#print phishing_karma
 	#print (scanned_ap['mac'] in phishing_karma and scanned_ap['essid'] not in phishing_karma)
 
@@ -133,14 +133,11 @@ def spot_karma(scanned_ap):
 		 	#print ("phishing_karma: %s" % phishing_karma.values()[i])
 		 	if (scanned_ap['essid'] not in phishing_karma.values()[i]):
 		 		cp+=1
-		 		#print "cp added up!"
-		 	#print ("%s and %s" %(cp,c))	
 		 	if (cp == c):
 		 		phishing_karma[scanned_ap['mac']].add(scanned_ap['essid'])
 				print(colors.get_color("FAIL")+"[%s | %s] Karma Rogue Access Point!\n[Type] Karma attack." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC") )
 				break
 	else:
-		#print "HERE"
 		phishing_karma[scanned_ap['mac']] = set([scanned_ap['essid']])
 
 
@@ -170,8 +167,8 @@ def gen_PineAp_ssid(scanned_ap):
 def send_Probe_Req(interface):
 
 	for pineAP_ssid in pineAP_ssids:
-		
-		##print("Probing for %s" % pineAP_ssid)	
+		##DEBUG
+		#print("Probing for %s" % pineAP_ssid)	
 
 		broadcast = ":".join(["ff"]*6)
 		rand_bssid = new_mac = ':'.join(['%02x'%x for x in imap(lambda x:randint(0,255), range(6))])
@@ -216,8 +213,8 @@ def spoting_PineAP(*arg):
 
 
 def free_WiFis_detect(scanned_ap, captured_aps):
-	
-	##print("Detecting Rogue Free Wifis ...")
+	##DEBUG
+	#print("Detecting Rogue Free Wifis ...")
 
 	with open('profiles/free_wifis.txt','r') as f:
 		next(f)
@@ -328,27 +325,26 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 				else: # not in auth vendors
 					print(colors.get_color("FAIL")+"[%s | %s] Strange Free WiFi. Possible Rogue Access Point!" % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
 
-
 def getTimeDate():
 	return time.strftime("%X") +" "+ time.strftime("%x")
 
 # to be completed
 def sniffRequests(p):
+	signal.signal(signal.SIGINT, signal_handler)
+	if (p.haslayer(Dot11Auth)):
+		print (p.sprintf(colors.get_color("OKGREEN")+"[%s] " %getTimeDate()+"Auth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%]"+ colors.get_color("ENDC")))
 	if (p.haslayer(Dot11Deauth)):
 		# Look for a deauth packet and print the AP BSSID, Client BSSID and the reason for the deauth.
 		print (p.sprintf(colors.get_color("OKBLUE")+"[%s] " %getTimeDate()+"Deauth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%], Reason [%Dot11Deauth.reason%]"+ colors.get_color("ENDC")))
-		signal.signal(signal.SIGINT, signal_handler)
-		
-		
 
 def deauth_detector(interface):
 	global interface_monitor
 	interface_monitor = interface
 	print (colors.get_color("GRAY")+"Looking for Deauths..."+colors.get_color("ENDC"))
-	sniff(iface=interface,prn=sniffRequests)
+	sniff(iface=interface,prn=sniffRequests,store=0)
 
 def check_tsf(scanned_ap):
-	##print ("You have: "+scanned_ap['tsf'])
+	
 	simple_poc_threshold_down = "0:01:00.10"
 	simple_poc_threshold_up = 800
 	
@@ -360,7 +356,7 @@ def check_tsf(scanned_ap):
 	if ( len(scanned_ap['tsf'].split()) > 1 ):
 		if ( int(scanned_tsf) > simple_poc_threshold_up ):
 			print(colors.get_color("ORANGE")+"[%s | %s] Strange uptime..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-		
+	# infos	
 	# scapy tsf 0000 days
 	# airbase tsf 17436 days
 	# RAPs will have lower tsf

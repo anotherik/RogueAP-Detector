@@ -30,10 +30,11 @@ def intro():
 	 "| '__/ _ \ / _` | | | |/ _ \ / _ \ | |_) | | | | |/ _ \ __/ _ \/ __| __| \n" +
 	 "| | | (_) | (_| | |_| |  __// ___ \|  __/  | |_| |  __/ ||  __/ (__| |_ \n"+
 	 "|_|  \___/ \__, |\__,_|\___/_/   \_\_|     |____/ \___|\__\___|\___|\__| \n "+
-	 "          |___/                                                   v1.0\n"+
-     "\t\t\t\tby Ricardo Gonçalves (@anotherik)\n"+ colors.get_color("ENDC"))
+	 "          |___/                                                   v2.0\n"+
+     "\t\t\t\tby Ricardo Gonçalves - 0x4notherik\n"+ colors.get_color("ENDC"))
 
 def usage():
+	intro()
 	print_info("Usage: ./rogue_detector.py [option]")
 	print("\nOptions:  -i interface\t\t -> the interface to monitor the network")
 	print("\t  -im interface\t\t -> interface for active mode")
@@ -47,7 +48,7 @@ def usage():
 	print(colors.get_color("BOLD")+"\nExample:  ./rogue_detector.py -i iface -s iwlist -p example_profile.txt"+colors.get_color("ENDC"))
 
 def parse_args():
-	intro()
+	#intro()
 	scanners = ["scapy", "iwlist"]
 	scanner_type = ""
 	profile, scan, hive, deauth, active_probing, deauth_detect = False, False, False, False, False, False
@@ -91,10 +92,8 @@ def parse_args():
 		if (cmd == "-deauth_detect"):
 			deauth_detect = True
 
-			
 	if (scan):		
 		if (scanner_type == "scapy"):
-			manage_interfaces.change_mac(interface)
 			manage_interfaces.enable_monitor(interface)
 			try:
 				if (profile):
@@ -138,8 +137,6 @@ def parse_args():
 		except Exception as e:
 			print("Exception: %s" % e)
 			return
-			# config a file to load the AP parameters
-			# os.system("./createRogueAP.sh") # read params from config file
 
 	if (deauth):
 		iface_deauth = interface_monitor
@@ -163,9 +160,14 @@ def parse_args():
 			print("Exception: %s" % e)
 			return	
 
+def check_root():
+	if os.geteuid() != 0:
+		print(colors.get_color("FAIL") + "[!] Requires root" + colors.get_color("ENDC"))
+		sys.exit(0)
 
 def main():
+	check_root()
 	parse_args()
-
+	
 if __name__ == '__main__':
 	main()
