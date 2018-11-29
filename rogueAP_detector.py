@@ -42,7 +42,7 @@ def usage():
 	print("\t  -s scan_type\t\t -> name of scanning type (iwlist, scapy)")
 	print("\t  -h hive_mode\t\t -> creates an AP")
 	print("\t  -d deauth\t\t -> deauthenticates users from target AP")
-	print("\t  -wifi_attacks_detect\t -> detects deauthentication attacks")
+	print("\t  -wifi_attacks_detect\t -> detects deauthentication and pmkid attacks")
 	print("\t  -a active_mode\t -> activates random probe requests")
 
 	print(colors.get_color("BOLD")+"\nExample:  ./rogue_detector.py -i iface -s iwlist -p example_profile.txt"+colors.get_color("ENDC"))
