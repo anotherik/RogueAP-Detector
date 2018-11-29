@@ -45,7 +45,7 @@ def aps_lookup(pkt):
 	# we are checking if ssid is already in the access_points list (and we also want same ssid with different bssid)
 	if ( (pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp)) and (pkt[Dot11].addr3 not in access_points) ):
 		
-		print pkt[Dot11].cap
+		#print pkt[Dot11].cap
 		#print pkt[Dot11ProbeResp].cap
 		access_points.add(pkt[Dot11].addr3)
 		ssid = pkt[Dot11].info
@@ -78,6 +78,8 @@ def aps_lookup(pkt):
 
 		if (re.search("privacy", capability)): 
 			encryption = "1"
+			key_type = "Protected"
+			ap.update({"key type":key_type})
 			#print pkt[Dot11Elt].ID
 			#if (pkt[Dot11Elt].ID == 48):
 			#	key_type = "WPA2"
@@ -98,7 +100,7 @@ def aps_lookup(pkt):
 
 		# call passive detectors
 
-		##print ("The AP:\n %s" % ap)
+		#print ("The AP:\n %s" % ap)
 		if (profile):
 			passive_detectors.authorized_aps(ap, profile)
 		passive_detectors.free_WiFis_detect(ap, captured_aps)

@@ -14,6 +14,8 @@ def get_color(color):
         return '\033[93m'
     if color == 'ORANGE': 
         return '\033[33m'
+    if color == 'PURPLE': 
+        return '\033[95m'
     if color == 'ENDC':
         return '\033[0m'
     if color == 'BOLD': 
