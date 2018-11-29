@@ -20,7 +20,7 @@ Options:
 	-s scan_type            -> name of scanning type (iwlist, scapy)  
 	-h hive_mode		-> creates an AP  
 	-d deauth               -> deauthenticates users from target AP  
-	-deauth_detect          -> detects deauthentication attacks  
+	-wifi_attacks_detect          -> detects deauthentication and pmkid attacks  
 	-a active_mode		-> activates random probe requests  
 
 Examples:  
@@ -44,8 +44,8 @@ Examples:
 <b> Deauthenticate defensive mechanism mode</b>  
 ./rogueAP_detector.py -im iface -d  
 
-<b> Deauthentication attacks detection</b>  
-./rogueAP_detector.py -im iface -deauth_detect  
+<b> Deauthentication and PMKID attacks detection</b>  
+./rogueAP_detector.py -im iface -wifi_attacks_detect  
 </pre>
 
 ![RogueAP Detector](screenshot.png)

@@ -48,19 +48,20 @@ def authorized_aps(scanned_ap, profile):
 		t = 0
 		for line in f:
 			
-			auth_ssid, auth_enc, auth_rssi = line.split()[0], line.split()[1], line.split()[2]
+			auth_ssid, auth_enc, auth_rssi, auth_ch = line.split()[0], line.split()[1], line.split()[2], line.split()[3]
 			auth_rssi = int(auth_rssi)
-			nr_auth_aps = int(line.split()[3])
+			auth_ch = int(auth_ch)
+			nr_auth_aps = int(line.split()[4])
 			
 			if (scanned_ap['essid'] == auth_ssid):
 				auth_bssids = []
-				c = 4
+				c = 5
 				while c<len(line.split()):
 				 	auth_bssids.append(line.split()[c])
 				 	c+=1
 
-				if(c>5):
-					t = c-5
+				if(c>6):
+					t = c-6
 
 				## DEBUG
 				#print ("scanned ap: %s" % scanned_ap['mac'])
@@ -69,6 +70,9 @@ def authorized_aps(scanned_ap, profile):
 				
 					if (auth_enc != 'Open' and scanned_ap['key type'] == "Open"):
 						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, different encryption." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
+						break
+					if (auth_ch != int(scanned_ap['channel'])):
+						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Multichannel AP." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
 						break
 					if ( abs(int(scanned_ap['signal'])) > auth_rssi+15 or abs(int(scanned_ap['signal'])) < auth_rssi-15 ):
 					 	print(colors.get_color("FAIL")+"[%s | %s] Strange RSSI!!! Associate? (y/n)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
@@ -127,10 +131,12 @@ def spot_karma(scanned_ap):
 		c = len(phishing_karma.values())
 		cp = 0
 		for i in range(c):
-		 	if (scanned_ap['essid'] in phishing_karma.values()[i]):
+		 	if (scanned_ap['essid'] in phishing_karma.values()[i] and scanned_ap['mac'] in phishing_karma.values()[i]):
 		 		break
 		 	#print ("scanned_ap %s" % scanned_ap['essid'])
 		 	#print ("phishing_karma: %s" % phishing_karma.values()[i])
+		 	if (scanned_ap['essid'] in phishing_karma.values()[i] and scanned_ap['mac'] not in phishing_karma.values()[i]):
+		 		cp+=1
 		 	if (scanned_ap['essid'] not in phishing_karma.values()[i]):
 		 		cp+=1
 		 	if (cp == c):
@@ -328,19 +334,36 @@ def free_WiFis_detect(scanned_ap, captured_aps):
 def getTimeDate():
 	return time.strftime("%X") +" "+ time.strftime("%x")
 
-# to be completed
+
 def sniffRequests(p):
+	global auth_reqs
+	global assoc_reqs
+
 	signal.signal(signal.SIGINT, signal_handler)
 	if (p.haslayer(Dot11Auth)):
-		print (p.sprintf(colors.get_color("OKGREEN")+"[%s] " %getTimeDate()+"Auth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%]"+ colors.get_color("ENDC")))
+		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("OKGREEN") + "Authentication packet found from %s to %s" % (p[Dot11].addr2, p[Dot11].addr1) + colors.get_color("ENDC") )
+		auth_reqs+=1
+	if (p.haslayer(Dot11AssoReq)):
+		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("OKBLUE") + "Association request found from %s to %s" % (p[Dot11].addr2, p[Dot11].addr1) + colors.get_color("ENDC") )
+		assoc_reqs+=1
 	if (p.haslayer(Dot11Deauth)):
-		# Look for a deauth packet and print the AP BSSID, Client BSSID and the reason for the deauth.
-		print (p.sprintf(colors.get_color("OKBLUE")+"[%s] " %getTimeDate()+"Deauth Found from AP [%Dot11.addr2%] Client [%Dot11.addr1%], Reason [%Dot11Deauth.reason%]"+ colors.get_color("ENDC")))
+		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("PURPLE") + "Deauthentication packet found from %s to %s Reason -> %s" % (p[Dot11].addr2, p[Dot11].addr1, p[Dot11Deauth].reason) + colors.get_color("ENDC") )
 
-def deauth_detector(interface):
+	if(auth_reqs>=20):
+		print(colors.get_color("FAIL")+"Too many Authentication requests. Probable PMKID attack!" + colors.get_color("ENDC") )
+		auth_reqs=0
+	if(assoc_reqs>=20):
+		print(colors.get_color("FAIL")+"Too many Association requests. Probable PMKID attack!"  + colors.get_color("ENDC") )
+		assoc_reqs=0
+
+def wifi_attacks_detector(interface):
 	global interface_monitor
 	interface_monitor = interface
-	print (colors.get_color("GRAY")+"Looking for Deauths..."+colors.get_color("ENDC"))
+	global auth_reqs
+	global assoc_reqs
+	auth_reqs = 0
+	assoc_reqs = 0
+	print (colors.get_color("GRAY")+"WiFi Attacks Detection..."+colors.get_color("ENDC"))
 	sniff(iface=interface,prn=sniffRequests,store=0)
 
 def check_tsf(scanned_ap):
@@ -356,7 +379,4 @@ def check_tsf(scanned_ap):
 	if ( len(scanned_ap['tsf'].split()) > 1 ):
 		if ( int(scanned_tsf) > simple_poc_threshold_up ):
 			print(colors.get_color("ORANGE")+"[%s | %s] Strange uptime..." % (scanned_ap['essid'], scanned_ap['mac']) +colors.get_color("ENDC") )
-	# infos	
-	# scapy tsf 0000 days
-	# airbase tsf 17436 days
-	# RAPs will have lower tsf
+

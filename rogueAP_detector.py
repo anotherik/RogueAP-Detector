@@ -42,7 +42,7 @@ def usage():
 	print("\t  -s scan_type\t\t -> name of scanning type (iwlist, scapy)")
 	print("\t  -h hive_mode\t\t -> creates an AP")
 	print("\t  -d deauth\t\t -> deauthenticates users from target AP")
-	print("\t  -deauth_detect\t -> detects deauthentication attacks")
+	print("\t  -wifi_attacks_detect\t -> detects deauthentication and pmkid attacks")
 	print("\t  -a active_mode\t -> activates random probe requests")
 
 	print(colors.get_color("BOLD")+"\nExample:  ./rogue_detector.py -i iface -s iwlist -p example_profile.txt"+colors.get_color("ENDC"))
@@ -51,7 +51,7 @@ def parse_args():
 	#intro()
 	scanners = ["scapy", "iwlist"]
 	scanner_type = ""
-	profile, scan, hive, deauth, active_probing, deauth_detect = False, False, False, False, False, False
+	profile, scan, hive, deauth, active_probing, wifi_attacks_detect = False, False, False, False, False, False
 
 	if (len(sys.argv) < 4):
 		usage()
@@ -89,8 +89,8 @@ def parse_args():
 		if (cmd == "-a"):
 			active_probing = True	
 
-		if (cmd == "-deauth_detect"):
-			deauth_detect = True
+		if (cmd == "-wifi_attacks_detect"):
+			wifi_attacks_detect = True
 
 	if (scan):		
 		if (scanner_type == "scapy"):
@@ -149,11 +149,11 @@ def parse_args():
 			print("Exception: %s" % e)
 			return		
 
-	if (deauth_detect):
+	if (wifi_attacks_detect):
 		iface_deauth = interface_monitor
 		try:	
 			manage_interfaces.enable_monitor(iface_deauth)
-			p = multiprocessing.Process(passive_detectors.deauth_detector(interface_monitor))
+			p = multiprocessing.Process(passive_detectors.wifi_attacks_detector(interface_monitor))
 			p.start()
 			p.join()
 		except Exception as e:
