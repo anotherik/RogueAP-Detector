@@ -2,6 +2,8 @@
 
 _rogueAP Detector_ is an open source tool to detect Wi-Fi Rogue Access Points, covering the most commonly known attacks.  This tool is a modular framework composed of Scanners, Detectors and Actuators, which are responsible for scanning for available APs, apply a set of heuristics to detect them, and apply a defensive mechanism.  
 
+![RogueAP Detector_1](img_1.PNG)
+
 ## Modules
 <pre>
 <b>Scanners</b>: Methods to scan the network  
@@ -51,7 +53,21 @@ Examples:
 ./rogueAP_detector.py -im iface -wifi_attacks_detect  
 </pre>
 
-![RogueAP Detector](screenshot.png)
+Detecting Evil Twin, Multi-Channel, Different Encryption and Recently Created Rogue APs:  
+
+![RogueAP Detector_2](img_2.PNG)
+
+Validate Free WiFis and Detecting Karma Attacks:  
+
+![RogueAP Detector_3](img_3.PNG)
+
+PMKID Attack Detection:  
+
+![RogueAP Detector_4](img_4.PNG)
+
+PMKID and Deauthentication Attacks Detection:  
+
+![RogueAP Detector_5](img_5.PNG)
 
 ## Dependencies
 python2.7  
