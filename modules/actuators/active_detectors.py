@@ -1,8 +1,12 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # Rogue Access Point Detector
-# version: 0.1
+# version: 2.0
 # author: anotherik (Ricardo Gonçalves)
+
+##################################
+#     Active Detectors Module    #
+##################################
 
 # Supress Scapy IPv6 warning
 import logging

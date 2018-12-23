@@ -1,10 +1,15 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # Rogue Access Point Detector
-# version: 0.1
+# version: 2.0
 # author: anotherik (Ricardo Gonçalves)
 
-import os, string, threading, sys, signal, time, Queue, multiprocessing
+##################################
+#        Rogue AP Detector       #
+#           Main Module          #
+##################################
+
+import os, string, threading, sys, time, Queue, multiprocessing, subprocess
 import modules.scanners.iwlist_network_monitor as iwlist_monitor
 import modules.scanners.scapy_network_monitor as scapy_monitor
 import modules.actuators.createRogueAP as hive_mode
@@ -48,7 +53,7 @@ def usage():
 	print(colors.get_color("BOLD")+"\nExample:  ./rogue_detector.py -i iface -s iwlist -p example_profile.txt"+colors.get_color("ENDC"))
 
 def parse_args():
-	#intro()
+	##intro()
 	scanners = ["scapy", "iwlist"]
 	scanner_type = ""
 	profile, scan, hive, deauth, active_probing, wifi_attacks_detect = False, False, False, False, False, False
@@ -57,16 +62,18 @@ def parse_args():
 		usage()
 		return
 
-	# setting args
+	# setting up args
 	for cmd in sys.argv:
 
 		if (cmd == "-i"):
 			global interface
 			interface = sys.argv[sys.argv.index(cmd)+1]
+			pre_check(interface)
 
 		if (cmd == "-im"):
 			global interface_monitor
 			interface_monitor = sys.argv[sys.argv.index(cmd)+1]
+			pre_check(interface_monitor)
 
 		if (cmd == "-p"):
 			profile_name = sys.argv[sys.argv.index(cmd)+1]
@@ -105,6 +112,7 @@ def parse_args():
 				return
 		
 		if (scanner_type == "iwlist"):
+
 			try:
 				if (profile and active_probing):
 					manage_interfaces.change_mac(interface_monitor)
@@ -128,6 +136,13 @@ def parse_args():
 			return
 
 	if (hive):
+		try:
+			interface_monitor
+		except Exception as e:
+			print (colors.get_color("ORANGE") + "'im' interface not defined!" + colors.get_color("ENDC"))
+			print (colors.get_color("GRAY") + "Exception: %s" % e + colors.get_color("ENDC"))
+			sys.exit(0)
+
 		iface_hive = interface_monitor
 		try:	
 			manage_interfaces.enable_monitor(iface_hive)
@@ -159,6 +174,22 @@ def parse_args():
 		except Exception as e:
 			print("Exception: %s" % e)
 			return	
+
+
+def pre_check(iface):
+	try:
+		if(iface):
+			check_interface(iface)
+	except:
+		sys.exit(0)
+
+def check_interface(iface):
+	try:
+		outputz = subprocess.check_output("iwlist " + iface + " scan", stderr=subprocess.STDOUT, shell=True)
+	except Exception as e:
+		print (colors.get_color("ORANGE") + "Please check your interface." + colors.get_color("ENDC"))
+		print (colors.get_color("GRAY") + "Exception: %s" % e + colors.get_color("ENDC") )
+		sys.exit(1)
 
 def check_root():
 	if os.geteuid() != 0:

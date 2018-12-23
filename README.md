@@ -18,9 +18,9 @@ Options:
 	-im interface		-> interface for active mode  
 	-p profile              -> name of the profile to load  
 	-s scan_type            -> name of scanning type (iwlist, scapy)  
-	-h hive_mode		-> creates an AP  
+	-h hive_mode		-> creates an AP (configured in profiles/rogueAP.txt) 
 	-d deauth               -> deauthenticates users from target AP  
-	-wifi_attacks_detect          -> detects deauthentication and pmkid attacks  
+	-wifi_attacks_detect    -> detects deauthentication and pmkid attacks  
 	-a active_mode		-> activates random probe requests  
 
 Examples:  
@@ -34,6 +34,9 @@ Examples:
 
 <b> Scan for RAPs using a profile - (scapy mode)</b>  
 ./rogueAP_detector.py -i iface -s scapy -p example_profile.txt  
+
+<b> Scan for RAPs with karma detect active mode enabled - (iwlist mode)</b>  
+./rogueAP_detector.py -i iface1 -im iface2 -s iwlist -a  
 
 <b> Scan for RAPs using a profile and karma detect active mode enabled - (iwlist mode)</b>  
 ./rogueAP_detector.py -i iface1 -im iface2 -s iwlist -p profile.txt -a  

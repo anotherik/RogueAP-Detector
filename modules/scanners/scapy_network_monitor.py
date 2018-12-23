@@ -1,7 +1,13 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
-# Network monitor using scapy
+# Rogue Access Point Detector
+# version: 2.0
 # author: anotherik (Ricardo Gonçalves)
+
+##################################
+#        Scanners Module         #
+#  Network monitor using scapy   #
+##################################
 
 # Supress Scapy IPv6 warning
 import logging
@@ -45,6 +51,7 @@ def aps_lookup(pkt):
 	# we are checking if ssid is already in the access_points list (and we also want same ssid with different bssid)
 	if ( (pkt.haslayer(Dot11Beacon) or pkt.haslayer(Dot11ProbeResp)) and (pkt[Dot11].addr3 not in access_points) ):
 		
+		# for future work
 		#print pkt[Dot11].cap
 		#print pkt[Dot11ProbeResp].cap
 		access_points.add(pkt[Dot11].addr3)
@@ -80,6 +87,7 @@ def aps_lookup(pkt):
 			encryption = "1"
 			key_type = "Protected"
 			ap.update({"key type":key_type})
+			# for future work
 			#print pkt[Dot11Elt].ID
 			#if (pkt[Dot11Elt].ID == 48):
 			#	key_type = "WPA2"
@@ -99,8 +107,6 @@ def aps_lookup(pkt):
 			ap.update({"key type":key_type})
 
 		# call passive detectors
-
-		#print ("The AP:\n %s" % ap)
 		if (profile):
 			passive_detectors.authorized_aps(ap, profile)
 		passive_detectors.free_WiFis_detect(ap, captured_aps)
@@ -110,34 +116,27 @@ def aps_lookup(pkt):
 
 		spaces = 23 - len(ssid)
 		spaces = ' '*spaces
-		#spaces2 = 18 - len(vendor)
-		#spaces2 = ' '*spaces2
+
 		if encryption=="0":
 			print colors.get_color("OKGREEN")+"%s %s %s %2d %s   %s  %s" % (ssid, spaces, bssid, int(channel), vendor, encryption, sig_str) + colors.get_color("ENDC")
 		else:	
 			print "%s %s %s %2d %s   %s  %s" % (ssid, spaces, bssid, int(channel), vendor, encryption, sig_str)
+		## For Database Module
 		##db_api.insert_in_db_scapy(conn, ssid, bssid, int(channel), vendor, encryption)
-
-		#time.sleep(0.5)
 
 	signal.signal(signal.SIGINT, signal_handler)
 
 
 def channel_hopper():
-	#current_ch = 6
-	#while True:
+	
 	try:
-		#current_ch+=1
-		#if(current_ch > 13):
-		#	current_ch = 1
-		#print("The current_ch: %s" % str(channel))	
 		os.system("sudo iw dev %s set channel %d" % (interface, channel) )
-		#time.sleep(0.5)
 	except Exception, err:
 		logs_api.errors_log(str(err))
 		pass
 
 def signal_handler(signal, frame):
+	## for Databse Module
 	##print("\n=== Dumping APs from memory ===")
 	##db_api.select_from_db(conn)
 	manage_interfaces.disable_monitor(interface)
@@ -154,21 +153,10 @@ def scapy_scan(*arg):
 	if (len(arg)>1):
 		profile = arg[1]
 	printHeader()
+	## For Database Module
 	##global conn
 	##conn = db_api.open_db()
 	##conn.text_factory = str
 	##db_api.create_table_scapy(conn)
 
-	# start the channel hopper
-	##p = Process(target = channel_hopper)
-	##p.start()
-
-	#p = multiprocessing.Process(channel_hopper())
-	#p.start()
-	#p.join()
-    # start scanning
 	sniff(iface=interface, prn=aps_lookup, store=0)
-
-	##p.terminate()
-	##p.join()
-	sys.exit(0)
