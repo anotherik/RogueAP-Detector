@@ -1,3 +1,16 @@
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
+# Rogue Access Point Detector
+# version: 2.0
+# author: anotherik (Ricardo Gonçalves)
+
+##################################
+#  Hive Mode - Create Rogue APs  #
+##################################
+
+# Supress Scapy IPv6 warning
+import logging
+logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
 import subprocess, signal, struct, sys
 import modules.manage_interfaces as manage_interfaces
@@ -52,14 +65,14 @@ def startRogueAP(i):
 		if (enc == "WPA"):
 			dot11BeaconHeaderWPA = Dot11Beacon(cap = 0x310c)
 			rsn = Dot11Elt(ID='RSNinfo', info=(
-			'\x01\x00'                 #RSN Version 1
-			'\x00\x0f\xac\x02'         #Group Cipher Suite : 00-0f-ac TKIP
-			'\x02\x00'                 #2 Pairwise Cipher Suites (next two lines)
-			'\x00\x0f\xac\x04'         #AES Cipher
-			'\x00\x0f\xac\x02'         #TKIP Cipher
-			'\x01\x00'                 #1 Authentication Key Managment Suite (line below)
-			'\x54\x6f\x72\x6f\x6e\x74\x6f\x2f\x32\x30\x31\x37\x2f'  #Pre-Shared Key
-			'\x00\x00'))               #RSN Capabilities (no extra capabilities)
+			'\x01\x00'                 # RSN Version 1
+			'\x00\x0f\xac\x02'         # Group Cipher Suite : 00-0f-ac TKIP
+			'\x02\x00'                 # 2 Pairwise Cipher Suites (next two lines)
+			'\x00\x0f\xac\x04'         # AES Cipher
+			'\x00\x0f\xac\x02'         # TKIP Cipher
+			'\x01\x00'                 # 1 Authentication Key Managment Suite (line below)
+			'\x37\x68\x33\x20\x35\x75\x70\x33\x72\x20\x35\x33\x63\x75\x72\x33\x20\x70\x34\x35\x35\x77\x30\x72\x64\x21'  # Pre-Shared Key
+			'\x00\x00'))               # RSN Capabilities (no extra capabilities)
 
 			pkt = radioTapHeader / dot11Header / dot11BeaconHeaderWPA / dot11Elt1 / dot11Elt2 / dot11Elt3 / dot11Elt4 / dot11Elt5 / rsn
 
@@ -70,4 +83,3 @@ def startRogueAP(i):
 		sendp(pkt, iface=interface) #, count=100, inter=0.5
 		
 		signal.signal(signal.SIGINT, signal_handler)
-		#time.sleep(5.0)

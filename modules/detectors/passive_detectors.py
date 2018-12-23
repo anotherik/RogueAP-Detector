@@ -1,21 +1,55 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # Rogue Access Point Detector
-# version: 0.1
+# version: 2.0
 # author: anotherik (Ricardo Gonçalves)
+
+##################################
+#    Passive Detectors Module    #
+##################################
 
 # Supress Scapy IPv6 warning
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+
 from scapy.all import *
 import modules.colors as colors
 import modules.manage_interfaces as manage_interfaces
 import modules.actuators.associate_model as associate
 import modules.logs.logs_api as logs_api
+import threading
 import Queue, multiprocessing
 from itertools import imap
 from random import randint
 import signal
+
+deauth_error_codes = {
+	0 : "Reserved.",
+	1 : "Unspecified reason.",
+	2 : "Previous authentication no longer valid.",
+	3 : "Deauthenticated because sending station (STA) is leaving or has left Independent Basic Service Set (IBSS) or ESS.",
+	4 : "Disassociated due to inactivity.",
+	5 : "Disassociated because WAP device is unable to handle all currently associated STAs.",
+	6 : "Class 2 frame received from nonauthenticated STA.",
+	7 : "Class 3 frame received from nonassociated STA.",
+	8 : "Disassociated because sending STA is leaving or has left Basic Service Set (BSS).",
+	9 : "STA requesting (re)association is not authenticated with responding STA.",
+	10 : "Disassociated because the information in the Power Capability element is unacceptable.",
+	11 : "Disassociated because the information in the Supported Channels element is unacceptable.",
+	12 : "Disassociated due to BSS Transition Management.",
+	13 : "Invalid element, that is, an element defined in this standard for which the content does not meet the specifications in Clause 8.",
+	14 : "Message integrity code (MIC) failure.",
+	15 : "4-Way Handshake timeout.",
+	16 : "Group Key Handshake timeout.",
+	17 : "Element in 4-Way Handshake different from (Re)Association Request/ Probe Response/Beacon frame.",
+	18 : "Invalid group cipher.",
+	19 : "Invalid pairwise cipher.",
+	20 : "Invalid AKMP.",
+	21 : "Unsupported RSNE version.",
+	22 : "Invalid RSNE capabilities.",
+	23 : "IEEE 802.1X authentication failed.",
+	24 : "Cipher suite rejected because of the security policy."
+}
 
 def signal_handler(signal, frame):
 	try:
@@ -100,6 +134,7 @@ def authorized_aps(scanned_ap, profile):
 					if (t==nr_auth_aps):
 						print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Evil Twin, unauthorized bssid." % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC") )	
 
+			## Testing Network			
 			if ( scanned_ap['essid'] == "LAB_NETWORK"):
 				 	print(colors.get_color("FAIL")+"[%s | %s] Associate? (y/n)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))
 				 	
@@ -135,8 +170,6 @@ def spot_karma(scanned_ap):
 		 		break
 		 	#print ("scanned_ap %s" % scanned_ap['essid'])
 		 	#print ("phishing_karma: %s" % phishing_karma.values()[i])
-		 	if (scanned_ap['essid'] in phishing_karma.values()[i] and scanned_ap['mac'] not in phishing_karma.values()[i]):
-		 		cp+=1
 		 	if (scanned_ap['essid'] not in phishing_karma.values()[i]):
 		 		cp+=1
 		 	if (cp == c):
@@ -155,7 +188,7 @@ def gen_random_ssid():
 
 pineAP_ssids = []
 def gen_PineAp_ssid(scanned_ap):
-
+	
 	# change to find by bssid!
 	default_name = "Pineapple"
 	default_bssid = ":13:37:"
@@ -188,9 +221,10 @@ def send_Probe_Req(interface):
 		sendp(pkt, iface=interface, verbose=0) #, verbose=0	
 
 def spoting_PineAP(*arg):
+	global interface_monitor
 	
 	scanned_ap = arg[0] 
-	#active_probing = False
+	active_probing = False
 	alfa_brand = "Alfa"
 	default_bssid = ":13:37:"
 	if (default_bssid in scanned_ap['mac']):
@@ -203,14 +237,25 @@ def spoting_PineAP(*arg):
 		print(colors.get_color("FAIL")+"[%s | %s] Possible Rogue Access Point!\n[Type] Blacklisted BSSID. (Acc: 1)" % (scanned_ap['essid'],scanned_ap['mac']) +colors.get_color("ENDC"))	
 
 	if(len(arg)>2):
+		
 		active_probing = arg[1]
 		interface_monitor = arg[2]	
-		
-		p1 = multiprocessing.Process(gen_PineAp_ssid(scanned_ap))
-		p1.start()
+
+
+		th1 = threading.Thread(target = gen_PineAp_ssid(scanned_ap))
+		th1.daemon = True
+		th1.start()
+		#p1 = multiprocessing.Process(target=gen_PineAp_ssid, args=(scanned_ap,))
+		#p1.start()
+		#p1.join()
+
 		if(active_probing):
-			p2 = multiprocessing.Process(send_Probe_Req(interface_monitor))
-			p2.start()
+			th2 = threading.Thread(target = send_Probe_Req(interface_monitor))
+			th2.daemon = True
+			th2.start()
+			#p2 = multiprocessing.Process(target=send_Probe_Req, args=(interface_monitor,))
+			#p2.start()
+			#p2.join()
 
 	for pineAP_ssid in pineAP_ssids:
 		if(pineAP_ssid == scanned_ap['essid']):
@@ -339,7 +384,7 @@ def sniffRequests(p):
 	global auth_reqs
 	global assoc_reqs
 
-	signal.signal(signal.SIGINT, signal_handler)
+
 	if (p.haslayer(Dot11Auth)):
 		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("OKGREEN") + "Authentication packet found from %s to %s" % (p[Dot11].addr2, p[Dot11].addr1) + colors.get_color("ENDC") )
 		auth_reqs+=1
@@ -347,14 +392,19 @@ def sniffRequests(p):
 		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("OKBLUE") + "Association request found from %s to %s" % (p[Dot11].addr2, p[Dot11].addr1) + colors.get_color("ENDC") )
 		assoc_reqs+=1
 	if (p.haslayer(Dot11Deauth)):
-		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("PURPLE") + "Deauthentication packet found from %s to %s Reason -> %s" % (p[Dot11].addr2, p[Dot11].addr1, p[Dot11Deauth].reason) + colors.get_color("ENDC") )
+		print ( colors.get_color("BOLD")+"[%s] " % getTimeDate() + colors.get_color("PURPLE") + "Deauthentication packet found from %s to %s Reason -> %s" % (p[Dot11].addr2, p[Dot11].addr1, p[Dot11Deauth].reason) + colors.get_color("ENDC") ),
+		error_code = int(p[Dot11Deauth].reason)
+		print deauth_error_codes[error_code]
 
 	if(auth_reqs>=20):
-		print(colors.get_color("FAIL")+"Too many Authentication requests. Probable PMKID attack!" + colors.get_color("ENDC") )
+		print(colors.get_color("FAIL")+"[WiFi Attack] Probable PMKID attack.\nReason: Too many Authentication requests." + colors.get_color("ENDC") )
 		auth_reqs=0
 	if(assoc_reqs>=20):
-		print(colors.get_color("FAIL")+"Too many Association requests. Probable PMKID attack!"  + colors.get_color("ENDC") )
+		print(colors.get_color("FAIL")+"[WiFi Attack] Probable PMKID attack.\nReason: Too many Association requests."  + colors.get_color("ENDC") )
 		assoc_reqs=0
+
+	signal.signal(signal.SIGINT, signal_handler)
+
 
 def wifi_attacks_detector(interface):
 	global interface_monitor
@@ -364,7 +414,7 @@ def wifi_attacks_detector(interface):
 	auth_reqs = 0
 	assoc_reqs = 0
 	print (colors.get_color("GRAY")+"WiFi Attacks Detection..."+colors.get_color("ENDC"))
-	sniff(iface=interface,prn=sniffRequests,store=0)
+	sniff(iface=interface_monitor,prn=sniffRequests,store=0)
 
 def check_tsf(scanned_ap):
 	

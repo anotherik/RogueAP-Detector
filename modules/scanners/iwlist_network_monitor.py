@@ -1,8 +1,17 @@
 #!/usr/bin/python2
-# Network monitor using iwlist
+# -*- coding: utf-8 -*-
+# Rogue Access Point Detector
+# version: 2.0
+# author: anotherik (Ricardo Gonçalves)
+
+##################################
+#        Scanners Module         #
+#  Network monitor using iwlist  #
+##################################
+
 import subprocess, sys, time, re, json, os, signal
 import manufacturer.parse_manufacturer as manufacturer
-import modules.detectors.noknowled_detector as noknowled_detector
+import modules.detectors.noknowledge_detector as noknowledge_detector
 import modules.logs.logs_api as logs_api
 import modules.detectors.passive_detectors as passive_detectors
 import modules.manage_interfaces as manage_interfaces
@@ -18,7 +27,7 @@ table_of_manufacturers = {}
 global interface_monitor
 
 def getTimeDate():
-	return time.strftime("%X") +" "+ time.strftime("%x")#time.strftime("%c")
+	return time.strftime("%X") +" "+ time.strftime("%x")
 
 def getTimeDate2():
         return time.strftime("%x").replace("/", "")+"_"+time.strftime("%X")
@@ -29,14 +38,12 @@ log_file = open(log_name,'a')
 class Unbuffered:
 
    def __init__(self, stream):
-
        self.stream = stream
 
    def write(self, data):
-
        self.stream.write(data)
        self.stream.flush()
-       log_file.write(data)    # Write the data of stdout here to a text file as well
+       log_file.write(data)
 
 def signal_handler(signal, frame):
 	try:
@@ -49,9 +56,10 @@ def signal_handler(signal, frame):
 	sys.exit(0)
 
 def scan(*arg):
-	##print ("Scanning "+str(len(arg)))
+	
 	active_probing, profile = False, False
 	interface = arg[0]
+	global interface_monitor
 	if(len(arg)==2):
 		profile = arg[1]
 	elif(len(arg)==3):
@@ -78,23 +86,35 @@ def scan(*arg):
 					if len(line['essid'])>21:
 						limited = True
 
-					# apply detections heuristics
+					# apply no knowledge heuristics
 					if limited:
-						if (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
+						# captured AP with same essid and dif bssid and encryption
+						if (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
 							print (colors.get_color("FAIL") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'][0:21],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
-						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
+						# captured AP with same bssid and dif essid and encryption (karma)	
+						elif (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
 							print (colors.get_color("FAIL1") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'][0:21],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
-						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
+						# captured AP with same essid, bssid, encryption and dif channel
+						elif (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
 							print (colors.get_color("FAIL2") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'][0:21],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
+						# captured AP with same essid, bssid, channel and dif encryption	
+						elif (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
+							print (colors.get_color("ORANGE") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'][0:21],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
 						else:
 							print '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'][0:21],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf'])
 					else:
-						if (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
+						# captured AP with same essid and dif bssid and encryption
+						if (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_1"):
 							print (colors.get_color("FAIL") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
-						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
+						# captured AP with same bssid and dif essid and encryption (karma)
+						elif (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_2" or noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
 							print (colors.get_color("FAIL1") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
-						elif (noknowled_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
+						# captured AP with same essid, bssid, encryption and dif channel
+						elif (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_3"):
 							print (colors.get_color("FAIL2") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )
+						# captured AP with same essid, bssid, channel and dif encryption
+						elif (noknowledge_detector.suspicious_behaviours(line,captured_aps) == "suspicious_4"):
+							print (colors.get_color("ORANGE") + '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf']) + colors.get_color("ENDC") )	
 						else:
 							print '{:^22s} {:<23s}  {:^9s} {:^19s} {:^15s} {:^8s} {:^9s} {:^10s} {:^18s} {:^8s} {:^16s}   {:<18s}'.format(getTimeDate(),line['essid'],line['channel'],line['mac'], line['manufacturer'],line['signal'],line['quality'],line['frequency'],line['key type'],line['group cipher'], line['authentication suites'], line['tsf'])
 		
@@ -106,16 +126,12 @@ def scan(*arg):
 						passive_detectors.free_WiFis_detect(line, captured_aps)
 
 					passive_detectors.spot_karma(line)
-					#passive_detectors.deauth_detector(interface_monitor) # new stufx
+					# passive_detectors.deauth_detector(interface_monitor) # new stufx
 					
 					if (active_probing):
 						passive_detectors.spoting_PineAP(line, active_probing, interface_monitor)
 					else:
 						passive_detectors.spoting_PineAP(line)
-
-					#if (deauth_detect):
-						#passive_detectors.deauth_detector(interface_monitor) # new stufx
-					# end of detections heuristics	
 
 					passive_detectors.check_tsf(line)
 
@@ -130,9 +146,9 @@ def scan(*arg):
 def get_results(interface):
     list_of_results=[]
     try:
-		#Call the process to get the output to parse
+		# call the process to get the output to parse
         proc = subprocess.check_output("sudo iwlist "+interface+" scan",shell=True)
-		#Break the output making an array containing the info of each Access Point 
+		# break the output making an array containing the info of each Access Point 
         list_of_results = re.split(r'\bCell \d{2}\b - ',proc)[1:]
     except subprocess.CalledProcessError:
     	logs_api.errors_log("Error"+str(subprocess.CalledProcessError))

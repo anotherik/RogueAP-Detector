@@ -1,3 +1,9 @@
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
+# Rogue Access Point Detector
+# version: 2.0
+# author: anotherik (Ricardo Gonçalves)
+
 import os, random, string, sys, time
 from itertools import imap
 from random import randint

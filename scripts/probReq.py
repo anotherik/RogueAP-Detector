@@ -1,3 +1,8 @@
+#!/usr/bin/python2
+# anotherik
+
+# Script to send Prob Requests using Scapy
+
 # Supress Scapy IPv6 warning
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)

@@ -1,4 +1,6 @@
 #!/bin/bash
+# anotherik
+
 printf "  [Run as root] This will install all the required dependencies...\n"
 printf "  Choose your distro:\n\t(1) Debian based\n\t(2) Red Hat based\n\t(3) Arch\n\t(4) Open suse\n"
 read choice

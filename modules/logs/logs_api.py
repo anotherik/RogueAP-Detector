@@ -1,3 +1,13 @@
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
+# Rogue Access Point Detector
+# version: 2.0
+# author: anotherik (Ricardo Gonçalves)
+
+##################################
+#          Logs API              #
+##################################
+
 import time, os, sys
 
 def getDate():
