@@ -21,7 +21,7 @@ import data.manipulate_db as db_api
 import modules.manage_interfaces as manage_interfaces
 import modules.colors as colors
 import modules.detectors.passive_detectors as passive_detectors
-import modules.detectors.noknowled_detector as noknowled_detector
+import modules.detectors.noknowledge_detector as noknowledge_detector
 import modules.logs.logs_api as logs_api
 import multiprocessing
 
